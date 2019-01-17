@@ -1,6 +1,6 @@
 package me.kingtux.tmvc.core.annotations;
 
-import me.kingtux.tmvc.core.RequestType;
+import me.kingtux.tmvc.core.request.RequestType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
