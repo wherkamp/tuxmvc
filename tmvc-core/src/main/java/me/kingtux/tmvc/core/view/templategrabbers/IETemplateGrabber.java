@@ -1,8 +1,8 @@
 package me.kingtux.tmvc.core.view.templategrabbers;
 
 import me.kingtux.tmvc.core.view.TemplateGrabber;
-import me.kingtux.tuxutils.common.CommonUtils;
-import me.kingtux.tuxutils.common.FileUtils;
+import me.kingtux.tuxutils.core.CommonUtils;
+import me.kingtux.tuxutils.core.FileUtils;
 
 import java.io.*;
 
@@ -30,7 +30,7 @@ public class IETemplateGrabber implements TemplateGrabber {
     public void setExtension(String extension) {
         this.extension = extension;
     }
-
+    @SuppressWarnings("Duplicates")
     @Override
     public String getFile(final String s) {
         File externalTemplate = new File(externalLocation, s.replace("/", File.separator) + extension);

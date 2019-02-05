@@ -13,5 +13,30 @@ public @interface RequestParam {
 
     String defaultValue() default "";
 
-    boolean required() default true;
+    Type type() default Type.REQUEST;
+
+    //TODO add support for required
+    // boolean required() default true;
+
+    /**
+     * Where the value would be
+     */
+    enum Type {
+        /**
+         * This means it was a query param. If the request type was get it will do a get if it was POST it will be post
+         */
+        REQUEST,
+        /**
+         * If you have get varaibles even if the request type isnt get
+         */
+        GET,
+        /**
+         * A request param
+         */
+        URL,
+        /**
+         * This is a file idiot
+         */
+        FILE;
+    }
 }

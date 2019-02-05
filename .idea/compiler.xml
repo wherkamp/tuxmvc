@@ -12,8 +12,8 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="tmvc-core" target="1.8" />
-      <module name="tmvc-security" target="1.5" />
-      <module name="tuxmvc" target="1.5" />
+      <module name="tmvc-security" target="1.8" />
+      <module name="tuxmvc" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
