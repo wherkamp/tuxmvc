@@ -27,4 +27,11 @@ public interface Website {
      */
     @Deprecated
     DatabaseController getDatabaseController();
+
+    /**
+     * Https
+     *
+     * @return is is running https
+     */
+    boolean isHttps();
 }

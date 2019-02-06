@@ -37,7 +37,7 @@ public class SingleController {
             } catch (Throwable e) {
                 throw new ControllerExeception(this, e);
             }
-            if (!request.hasResponded())
+            if (!request.hasResponded() || !view.getTemplate().equals(""))
                 request.respond(view, vb);
         };
     }

@@ -64,13 +64,29 @@ public interface Request {
 
     RequestType getRequestType();
 
+    int status();
 
+    void status(int status);
+
+    default void status(HTTPCode status) {
+        status(status.getCode());
+    }
     //Header Crap
     Map<String, String> header();
 
     default String header(String s) {
         return header().get(s);
     }
+
+    default void redirect(String url) {
+        redirect(url, HTTPCode.TEMP_REDIRECT);
+    }
+
+    default void redirect(String url, HTTPCode httpCode) {
+        redirect(url, httpCode.getCode());
+    }
+
+    void redirect(String url, int httpCode);
 
     /**
      * Basically this will sort the paramters into its needed groups and order

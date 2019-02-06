@@ -28,7 +28,7 @@ public class InternalTemplateGrabber  implements TemplateGrabber {
     @Override
     public String getFile(String s) {
         try {
-            InputStream is = getClass().getResourceAsStream(internalLocation + File.separator + s + extension);
+            InputStream is = getClass().getResourceAsStream("/"+internalLocation + "/" + s + extension);
             return CommonUtils.bufferedReaderToString(new BufferedReader(new InputStreamReader(is)));
         } catch (Exception e) {
             return "";

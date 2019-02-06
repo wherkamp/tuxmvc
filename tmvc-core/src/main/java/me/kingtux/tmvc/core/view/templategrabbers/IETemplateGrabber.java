@@ -4,7 +4,10 @@ import me.kingtux.tmvc.core.view.TemplateGrabber;
 import me.kingtux.tuxutils.core.CommonUtils;
 import me.kingtux.tuxutils.core.FileUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * Basically how this one works. When you request a template file  it grabs it. If the file exists it uses that. If not it uses that one inside the jar.
@@ -21,6 +24,14 @@ public class IETemplateGrabber implements TemplateGrabber {
     public IETemplateGrabber(File externalLocation, String internalLocation) {
         this.externalLocation = externalLocation;
         this.internalLocation = internalLocation;
+        if (!externalLocation.exists()) externalLocation.mkdir();
+    }
+
+    public IETemplateGrabber(File externalLocation, String internalLocation, String extension) {
+        this.externalLocation = externalLocation;
+        this.internalLocation = internalLocation;
+        this.extension = extension;
+        if (!externalLocation.exists()) externalLocation.mkdir();
     }
 
     public String getExtension() {
@@ -30,19 +41,27 @@ public class IETemplateGrabber implements TemplateGrabber {
     public void setExtension(String extension) {
         this.extension = extension;
     }
+
+
     @SuppressWarnings("Duplicates")
     @Override
     public String getFile(final String s) {
-        File externalTemplate = new File(externalLocation, s.replace("/", File.separator) + extension);
-        if (externalTemplate.exists()) {
-            return FileUtils.fileToString(externalTemplate);
-        } else {
-            try {
-                InputStream is = getClass().getResourceAsStream(internalLocation + File.separator + s + extension);
-                return CommonUtils.bufferedReaderToString(new BufferedReader(new InputStreamReader(is)));
-            } catch (Exception e) {
-                return "";
+        if (s == null) return "";
+        try {
+            File externalTemplate = new File(externalLocation, s.replace("/", File.separator) + extension);
+            if (externalTemplate.exists()) {
+                return FileUtils.fileToString(externalTemplate);
+            } else {
+                try {
+                    InputStream is = getClass().getResourceAsStream("/" + internalLocation + "/" + s + extension);
+                    return CommonUtils.bufferedReaderToString(new BufferedReader(new InputStreamReader(is)));
+                } catch (Exception e) {
+                    return "";
+                }
             }
+        } catch (NullPointerException ignored) {
+
         }
+        return "";
     }
 }

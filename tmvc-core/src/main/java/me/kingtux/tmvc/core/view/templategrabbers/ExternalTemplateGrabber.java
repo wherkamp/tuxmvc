@@ -14,6 +14,11 @@ public class ExternalTemplateGrabber implements TemplateGrabber {
         if (!externalLocation.exists()) externalLocation.mkdirs();
     }
 
+    public ExternalTemplateGrabber(File externalLocation, String extension) {
+        this.externalLocation = externalLocation;
+        this.extension = extension;
+    }
+
     public File getExternalLocation() {
         return externalLocation;
     }
