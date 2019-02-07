@@ -37,6 +37,14 @@ public @interface RequestParam {
         /**
          * This is a file idiot
          */
-        FILE;
+        FILE,
+        /**
+         * Gets the value from the session
+         */
+        SESSION,
+        /**
+         * gets the value from the cookies!
+         */
+        COOKIE;
     }
 }

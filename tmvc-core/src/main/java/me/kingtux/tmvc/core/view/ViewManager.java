@@ -32,4 +32,11 @@ public interface ViewManager {
      * @return the view
      */
     View buildView(Website website, Request rq);
+
+    /**
+     * A Default template Variable takes is put into every view that is rendered
+     * @param key the key
+     * @param value the value
+     */
+    void registerDefaultViewVariable(String key, Object value);
 }

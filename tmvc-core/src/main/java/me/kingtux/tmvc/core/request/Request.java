@@ -187,5 +187,12 @@ public interface Request {
         //return files.isEmpty() ? null : files.get(0);
     }
 
+    //Session
+    void session(String key, Object value);
 
+    default  <T> T session(String key){
+        return (T) sessionMap().getOrDefault(key, null);
+    }
+
+    Map<String, Object> sessionMap();
 }
