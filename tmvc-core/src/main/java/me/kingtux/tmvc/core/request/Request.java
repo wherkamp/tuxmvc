@@ -1,5 +1,6 @@
 package me.kingtux.tmvc.core.request;
 
+import me.kingtux.tmvc.core.Website;
 import me.kingtux.tmvc.core.annotations.RequestParam;
 import me.kingtux.tmvc.core.annotations.RequestParam.Type;
 import me.kingtux.tmvc.core.view.View;
@@ -14,9 +15,18 @@ import java.util.Map;
  * A request contains all the things needed when requesting.
  */
 public interface Request {
-
+    /**
+     * THe response type
+     *
+     * @return the response type
+     */
     String responseType();
 
+    /**
+     * SEts the response type
+     *
+     * @param s the response type
+     */
     void responseType(String s);
 
     /**
@@ -28,7 +38,17 @@ public interface Request {
         responseType(s.getMimeType());
     }
 
+    /**
+     * Gets the query string
+     *
+     * @return the query string
+     */
+    String queryString();
 
+    /**
+     * The query param map
+     * @return a map of query params (GET)
+     */
     Map<String, String> queryParam();
 
     default String queryParam(String key) {
@@ -50,10 +70,14 @@ public interface Request {
         return formParam().getOrDefault(key, def);
     }
 
+    Map<String, String> cookieMap();
 
-    String cookie(String key);
+    default String cookie(String key) {
+        return cookieMap().get(key);
+    }
 
     void cookie(String key, String value);
+
 
     void cookie(String key, String value, int maxAge);
 
@@ -64,28 +88,66 @@ public interface Request {
 
     RequestType getRequestType();
 
+    /**
+     * Gets the status
+     *
+     * @return get the status
+     */
     int status();
 
+    /**
+     * The status value
+     * @param status value
+     */
     void status(int status);
 
+    /**
+     * the status value
+     * @param status the status
+     */
     default void status(HTTPCode status) {
         status(status.getCode());
     }
-    //Header Crap
+
+    /**
+     * Header map
+     * @return the map
+     */
     Map<String, String> header();
 
+    /**
+     * Gets a header value
+     * @param s key
+     * @return value
+     */
     default String header(String s) {
         return header().get(s);
     }
 
+    /**
+     * The redirect
+     * @param url the url to
+     */
     default void redirect(String url) {
         redirect(url, HTTPCode.TEMP_REDIRECT);
     }
 
+    /**
+     * Tells the client to redirect
+     *
+     * @param url      url
+     * @param httpCode http code
+     */
     default void redirect(String url, HTTPCode httpCode) {
         redirect(url, httpCode.getCode());
     }
 
+    /**
+     * Tells the client to redirect
+     *
+     * @param url      url to go to
+     * @param httpCode the http code
+     */
     void redirect(String url, int httpCode);
 
     /**
@@ -111,13 +173,15 @@ public interface Request {
                 } else if (requestParam.type() == Type.URL) {
                     o.add(i, pathParam(requestParam.key(), requestParam.defaultValue()));
 
-                } else {
-                    o.add(i, requestParam.defaultValue());
+                } else if (requestParam.type() == Type.COOKIE) {
+                    o.add(i, cookie(requestParam.key()));
                 }
             } else if (type.isAssignableFrom(View.class)) {
                 o.add(i, view);
             } else if (type.isAssignableFrom(Request.class)) {
                 o.add(i, this);
+            } else if (requestParam != null && requestParam.type() == Type.SESSION) {
+                o.add(i, session(requestParam.key()));
             } else if (requestParam != null && requestParam.type() == Type.FILE) {
                 if (type.isAssignableFrom(List.class)) {
                     //Get all
@@ -128,9 +192,6 @@ public interface Request {
             } else {
                 o.add(i, null);
             }
-        }
-        if (parameters.length != o.size()) {
-            throw new IllegalArgumentException("The sizes dont match");
         }
         return o.toArray();
     }
@@ -170,6 +231,10 @@ public interface Request {
         respond(vm.parseView(view));
     }
 
+    /**
+     * Respond with a string
+     * @param s the string to respond with
+     */
     void respond(String s);
 
     /**
@@ -179,20 +244,66 @@ public interface Request {
      */
     boolean hasResponded();
 
+    /**
+     * <b>Default: Empty List</b>
+     *
+     * @param s
+     * @return
+     */
     List<UploadedFile> getUploadedFiles(String s);
 
+    /**
+     * Value would be null
+     * <b>Default Null</b>
+     *
+     * @param s the key name
+     * @return the UploadedFile
+     */
     default UploadedFile getFirstUploadedFile(String s) {
+        if (getUploadedFiles(s).size() == 0) return null;
         return getUploadedFiles(s).toArray(new UploadedFile[1])[0];
-        // List<UploadedFile> files = getUploadedFiles(s);
-        //return files.isEmpty() ? null : files.get(0);
     }
 
-    //Session
+
+    /**
+     * sets a session value
+     *
+     * @param key   key
+     * @param value value
+     */
     void session(String key, Object value);
 
-    default  <T> T session(String key){
-        return (T) sessionMap().getOrDefault(key, null);
+    /**
+     * gets session value
+     *
+     * @param key the key
+     * @param <T> the type
+     * @return the value
+     */
+    default <T> T session(String key) {
+        return (T) sessionMap().get(key);
     }
 
+    /**
+     * The session map
+     * @return a map of the session entrys
+     */
     Map<String, Object> sessionMap();
+
+    /**
+     * This just redirects to baseURL
+     * <b>If you are at the base url. It will break</b>
+     */
+    default void returnToBase() {
+        redirect(getWebsite().getSiteRules().baseURL());
+    }
+
+    /**
+     * The website
+     *
+     * @return the website
+     */
+    Website getWebsite();
+
+    void setResponseHeader(String key, String value);
 }

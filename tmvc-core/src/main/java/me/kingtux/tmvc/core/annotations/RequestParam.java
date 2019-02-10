@@ -11,6 +11,10 @@ public @interface RequestParam {
 
     String key();
 
+    /**
+     * Cookies, FILE, Session does not support this
+     * @return the default value
+     */
     String defaultValue() default "";
 
     Type type() default Type.REQUEST;

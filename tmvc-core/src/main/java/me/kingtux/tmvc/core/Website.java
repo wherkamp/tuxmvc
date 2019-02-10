@@ -2,7 +2,6 @@ package me.kingtux.tmvc.core;
 
 import me.kingtux.tmvc.core.emails.EmailBuilder;
 import me.kingtux.tmvc.core.emails.EmailSettings;
-import me.kingtux.tmvc.core.errorhandler.ErrorHandler;
 import me.kingtux.tmvc.core.model.DatabaseController;
 import me.kingtux.tmvc.core.view.ViewManager;
 
@@ -16,7 +15,11 @@ public interface Website {
     void registerController(Object controller);
 
 
-    void registerErrorHandler(ErrorHandler eh);
+    /**
+     * @param eh
+     */
+    void registerErrorHandler(Object eh);
+
     /**
      * The view manager
      * @see ViewManager
@@ -44,6 +47,7 @@ public interface Website {
      * @return settings
      */
     EmailSettings getEmailSettings();
+
     /**
      * The Database Controller.
      *
@@ -83,4 +87,12 @@ public interface Website {
      * @return the site rules
      */
     WebsiteRules getSiteRules();
+
+    /**
+     * This sets all the CORS rule
+     * @param value the value
+     */
+    void setCORS(String value);
+
+    String getCORS();
 }
