@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-   compile "me.kingtux:SimpleAnnotation:1.3"
+   compile "me.kingtux:tuxmvc-core:1.0"
 }
 ```
 ## Examples:

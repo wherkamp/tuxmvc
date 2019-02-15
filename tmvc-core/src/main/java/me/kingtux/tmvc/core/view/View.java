@@ -29,4 +29,8 @@ public interface View {
      * @return the view
      */
     View set(String hey, Object s);
+
+    default View set(String hey, Object s, Object def) {
+        return s == null ? set(hey, def) : set(hey, s);
+    }
 }

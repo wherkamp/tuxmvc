@@ -39,4 +39,6 @@ public interface ViewManager {
      * @param value the value
      */
     void registerDefaultViewVariable(String key, Object value);
+
+    void registerViewVariableGrabber(String key, ViewVariableGrabber value);
 }
