@@ -6,6 +6,10 @@ import me.kingtux.tmvc.core.annotations.RequestParam.Type;
 import me.kingtux.tmvc.core.view.View;
 import me.kingtux.tmvc.core.view.ViewManager;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
@@ -237,6 +241,25 @@ public interface Request {
      */
     void respond(String s);
 
+    /**
+     * Respond with the InputStream
+     *
+     * @param stream the stream
+     */
+    void respond(InputStream stream);
+
+    /**
+     * Respond with a file!
+     *
+     * @param file the file
+     */
+    default void respond(File file) {
+        try {
+            respond(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * Has a respond happened
      *
