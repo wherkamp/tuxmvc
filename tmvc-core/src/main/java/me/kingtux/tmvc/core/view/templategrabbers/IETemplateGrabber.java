@@ -46,7 +46,7 @@ public class IETemplateGrabber implements TemplateGrabber {
     @SuppressWarnings("Duplicates")
     @Override
     public String getFile(final String s) {
-        if (s == null) return "";
+        if (s == null) return null;
         try {
             File externalTemplate = new File(externalLocation, s.replace("/", File.separator) + extension);
             if (externalTemplate.exists()) {
@@ -56,12 +56,12 @@ public class IETemplateGrabber implements TemplateGrabber {
                     InputStream is = getClass().getResourceAsStream("/" + internalLocation + "/" + s + extension);
                     return CommonUtils.bufferedReaderToString(new BufferedReader(new InputStreamReader(is)));
                 } catch (Exception e) {
-                    return "";
+                    return null;
                 }
             }
         } catch (NullPointerException ignored) {
 
         }
-        return "";
+        return null;
     }
 }

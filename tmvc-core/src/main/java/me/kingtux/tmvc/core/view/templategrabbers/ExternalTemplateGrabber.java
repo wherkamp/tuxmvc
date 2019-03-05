@@ -29,6 +29,6 @@ public class ExternalTemplateGrabber implements TemplateGrabber {
         if (templateFile.exists()) {
             return FileUtils.fileToString(templateFile);
         }
-        return "";
+        return null;
     }
 }

@@ -31,7 +31,7 @@ public class InternalTemplateGrabber  implements TemplateGrabber {
             InputStream is = getClass().getResourceAsStream("/"+internalLocation + "/" + s + extension);
             return CommonUtils.bufferedReaderToString(new BufferedReader(new InputStreamReader(is)));
         } catch (Exception e) {
-            return "";
+            return null;
         }
     }
 }
