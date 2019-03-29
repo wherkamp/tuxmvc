@@ -175,16 +175,11 @@ public interface Request {
 
                 } else if (requestParam.type() == RequestParam.Type.URL) {
                     o.add(i, pathParam(requestParam.key(), requestParam.defaultValue()));
-
-                } else if (requestParam.type() == RequestParam.Type.COOKIE) {
-                    o.add(i, cookie(requestParam.key()));
                 }
             } else if (type.isAssignableFrom(View.class)) {
                 o.add(i, view);
             } else if (type.isAssignableFrom(Request.class)) {
                 o.add(i, this);
-            } else if (requestParam != null && requestParam.type() == RequestParam.Type.SESSION) {
-                o.add(i, session(requestParam.key()));
             } else if (requestParam != null && requestParam.type() == RequestParam.Type.FILE) {
                 if (type.isAssignableFrom(List.class)) {
                     //Get all

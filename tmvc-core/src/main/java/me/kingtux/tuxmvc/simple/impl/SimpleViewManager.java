@@ -29,9 +29,6 @@ public class SimpleViewManager implements ViewManager {
 
     public SimpleViewManager(TemplateGrabber templateGrabber, Website website) {
         this.templateGrabber = templateGrabber;
-        if(this.templateGrabber ==null){
-            this.templateGrabber = new ExternalTemplateGrabber(new File("templates"));
-        }
         // sr.host sr.protocol and sr.baseURL
         registerDefaultViewVariable("sr", website.getSiteRules());
 

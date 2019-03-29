@@ -1,8 +1,7 @@
 package me.kingtux.tuxmvc.core;
 
-import me.kingtux.tuxmvc.core.emails.EmailBuilder;
-import me.kingtux.tuxmvc.core.emails.EmailSettings;
-import me.kingtux.tuxmvc.core.model.DatabaseController;
+import me.kingtux.tuxmvc.core.emails.EmailManager;
+import me.kingtux.tuxmvc.core.model.DatabaseManager;
 import me.kingtux.tuxmvc.core.view.ViewManager;
 
 @SuppressWarnings("ALL")
@@ -28,36 +27,12 @@ public interface Website {
     ViewManager getViewManager();
 
     /**
-     * This one already provides the FROM
-     *
-     * @return the Email builder
-     */
-    EmailBuilder buildEmailBuilder();
-
-    /**
-     * This one is empty
-     *
-     * @return the EmailBuilder
-     */
-    EmailBuilder buildEmtpyEmailBuilder();
-
-    /**
-     * Gets the email settings
-     *
-     * @return settings
-     */
-    EmailSettings getEmailSettings();
-
-    /**
      * The Database Controller.
      *
      * @return database controller
-     * @deprecated This isn't available yet
      */
-    @Deprecated
-    DatabaseController getDatabaseController();
 
-
+    EmailManager getEmailManager();
 
     /**
      * Closes and shutdown the website
@@ -89,4 +64,5 @@ public interface Website {
     void setCORS(String value);
 
     String getCORS();
+     DatabaseManager getDBManager();
 }

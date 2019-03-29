@@ -2,7 +2,7 @@ package me.kingtux.tuxmvc.simple;
 
 import java.lang.reflect.Field;
 
-public class TMSUtils {
+public class    TMSUtils {
 
     public static Object getFieldValue(Object o, String fieldName) {
         try {

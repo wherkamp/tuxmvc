@@ -3,42 +3,71 @@ package me.kingtux.tuxmvc.simple.impl;
 
 import io.javalin.Javalin;
 import io.javalin.core.HandlerType;
+import io.javalin.staticfiles.Location;
 import me.kingtux.simpleannotation.MethodFinder;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.WebsiteRules;
-import me.kingtux.tuxmvc.core.annotations.Path;
+import me.kingtux.tuxmvc.core.annotations.Controller;
 import me.kingtux.tuxmvc.core.controller.SingleController;
-import me.kingtux.tuxmvc.core.emails.EmailBuilder;
-import me.kingtux.tuxmvc.core.emails.EmailSettings;
+import me.kingtux.tuxmvc.core.model.DatabaseManager;
+import me.kingtux.tuxmvc.core.emails.EmailManager;
 import me.kingtux.tuxmvc.core.errorhandler.ErrorController;
-import me.kingtux.tuxmvc.core.errorhandler.annotations.EHPath;
-import me.kingtux.tuxmvc.core.model.DatabaseController;
+import me.kingtux.tuxmvc.core.errorhandler.annotations.EHController;
 import me.kingtux.tuxmvc.core.request.RequestType;
 import me.kingtux.tuxmvc.core.view.TemplateGrabber;
 import me.kingtux.tuxmvc.core.view.ViewManager;
+import me.kingtux.tuxmvc.simple.impl.email.SimpleEmailManager;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.lang.reflect.Method;
 
 
 public class SimpleWebsite implements Website {
     private Javalin javalin;
     private ViewManager viewManager;
-    private DatabaseController databaseController;
-    private boolean https = false;
     private String cors = "*";
-    private EmailSettings emailSettings;
+    private DatabaseManager dbManager;
+    private EmailManager emailManager;
     private WebsiteRules websiteRules;
+    private Logger siteLogger = LoggerFactory.getLogger("TuxMVC");
 
-    public SimpleWebsite(TemplateGrabber templateGrabber, Javalin javalin, String host, boolean https) {
-        this.https = https;
+
+    public SimpleWebsite(WebsiteRules websiteRules, int port, File file, TemplateGrabber tg, EmailManager em, DatabaseManager dbManager, SslContextFactory sslContextFactory, int sslPort) {
+        this.websiteRules = websiteRules;
+        emailManager = em;
+        ((SimpleEmailManager) emailManager).setSite(this);
+        this.dbManager = dbManager;
+
+        Javalin javalin = Javalin.create().enableStaticFiles(file.getPath(), Location.EXTERNAL);
+        if (!file.exists()) file.mkdir();
+        if (sslContextFactory != null) {
+            siteLogger.debug("Using SSL Server!");
+            javalin.server(() -> {
+                Server server = new Server();
+                ServerConnector sslConnector = new ServerConnector(server, sslContextFactory);
+                sslConnector.setPort(sslPort);
+                ServerConnector connector = new ServerConnector(server);
+                connector.setPort(port);
+                server.setConnectors(new Connector[]{sslConnector, connector});
+                return server;
+            });
+        } else {
+            siteLogger.debug("Starting Regular Website");
+            javalin.port(port);
+        }
         this.javalin = javalin;
-        websiteRules = new SimpleWebsiteRules(https ? "https" : "http", host);
-        viewManager = new SimpleViewManager(templateGrabber, this);
-
+        javalin.start();
+        viewManager = new SimpleViewManager(tg, this);
     }
 
     public void registerController(Object controller) {
-        for (Method method : MethodFinder.getAllMethodsWithAnnotation(controller.getClass(), Path.class)) {
+        for (Method method : MethodFinder.getAllMethodsWithAnnotation(controller.getClass(), Controller.class)) {
             SingleController sc = new SingleController(controller, method);
             javalin.addHandler(getHandlerType(sc.getRequestType()), sc.getPath(), new ControllerHandler(sc, this    )::execute);
         }
@@ -46,7 +75,7 @@ public class SimpleWebsite implements Website {
 
     @Override
     public void registerErrorHandler(Object errorHandler) {
-        for (Method method : MethodFinder.getAllMethodsWithAnnotation(errorHandler.getClass(), EHPath.class)) {
+        for (Method method : MethodFinder.getAllMethodsWithAnnotation(errorHandler.getClass(), EHController.class)) {
             ErrorController errorController = new ErrorController(errorHandler, method);
             javalin.error(errorController.status(), new ErrorControllerHandler(errorController, this)::execute);
         }
@@ -70,29 +99,13 @@ public class SimpleWebsite implements Website {
         return viewManager;
     }
 
-    @Override
-    public EmailBuilder buildEmailBuilder() {
-        return null;
-    }
+
 
     @Override
-    public EmailBuilder buildEmtpyEmailBuilder() {
-        return null;
+    public EmailManager getEmailManager() {
+        return emailManager;
     }
 
-    @Override
-    public EmailSettings getEmailSettings() {
-        return emailSettings;
-    }
-
-    public DatabaseController getDatabaseController() {
-        return null;
-    }
-
-    @Override
-    public boolean isHttps() {
-        return https;
-    }
 
     public void close() {
         javalin.stop();
@@ -111,5 +124,18 @@ public class SimpleWebsite implements Website {
     @Override
     public String getCORS() {
         return cors;
+    }
+
+    @Override
+    public DatabaseManager getDBManager() {
+        return dbManager;
+    }
+
+    public Javalin getJavalin() {
+        return javalin;
+    }
+
+    public DatabaseManager getDbManager() {
+        return dbManager;
     }
 }

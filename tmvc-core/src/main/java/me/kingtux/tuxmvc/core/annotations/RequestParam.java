@@ -19,6 +19,8 @@ public @interface RequestParam {
 
     Type type() default Type.REQUEST;
 
+
+
     //TODO add support for required
     // boolean required() default true;
 
@@ -41,14 +43,6 @@ public @interface RequestParam {
         /**
          * This is a file idiot
          */
-        FILE,
-        /**
-         * Gets the value from the session
-         */
-        SESSION,
-        /**
-         * gets the value from the cookies!
-         */
-        COOKIE;
+        FILE
     }
 }

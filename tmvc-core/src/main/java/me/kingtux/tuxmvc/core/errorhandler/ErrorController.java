@@ -3,7 +3,7 @@ package me.kingtux.tuxmvc.core.errorhandler;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.controller.ControllerExeception;
 import me.kingtux.tuxmvc.core.controller.ControllerExecutor;
-import me.kingtux.tuxmvc.core.errorhandler.annotations.EHPath;
+import me.kingtux.tuxmvc.core.errorhandler.annotations.EHController;
 import me.kingtux.tuxmvc.core.request.Request;
 import me.kingtux.tuxmvc.core.view.View;
 import me.kingtux.tuxmvc.core.view.ViewManager;
@@ -21,11 +21,11 @@ public class ErrorController {
     }
 
     public int status() {
-        return method.getAnnotation(EHPath.class).status();
+        return method.getAnnotation(EHController.class).status();
     }
 
     public String template() {
-        return method.getAnnotation(EHPath.class).template();
+        return method.getAnnotation(EHController.class).template();
     }
 
     @SuppressWarnings("All")

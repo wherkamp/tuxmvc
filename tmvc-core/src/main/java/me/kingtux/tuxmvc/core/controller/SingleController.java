@@ -1,7 +1,7 @@
 package me.kingtux.tuxmvc.core.controller;
 
 import me.kingtux.tuxmvc.core.Website;
-import me.kingtux.tuxmvc.core.annotations.Path;
+import me.kingtux.tuxmvc.core.annotations.Controller;
 import me.kingtux.tuxmvc.core.request.Request;
 import me.kingtux.tuxmvc.core.request.RequestType;
 import me.kingtux.tuxmvc.core.view.View;
@@ -20,15 +20,15 @@ public class SingleController {
     }
 
     public String getPath() {
-        return method.getAnnotation(Path.class).path();
+        return method.getAnnotation(Controller.class).path();
     }
 
     public RequestType getRequestType() {
-        return method.getAnnotation(Path.class).requestType();
+        return method.getAnnotation(Controller.class).requestType();
     }
 
     public String getTemplate() {
-        return method.getAnnotation(Path.class).template();
+        return method.getAnnotation(Controller.class).template();
     }
 
     @SuppressWarnings("All")
