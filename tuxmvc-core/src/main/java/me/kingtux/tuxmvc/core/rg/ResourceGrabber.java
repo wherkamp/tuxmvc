@@ -1,5 +1,7 @@
 package me.kingtux.tuxmvc.core.rg;
 
+import java.net.URL;
+
 /**
  * What is a template grabber you may ask?
  * Well it grabs the template file! and returns the file name
@@ -8,7 +10,7 @@ package me.kingtux.tuxmvc.core.rg;
  */
 public interface ResourceGrabber {
 
-    String getFile(String s);
+    URL getFile(String s);
 
 
 

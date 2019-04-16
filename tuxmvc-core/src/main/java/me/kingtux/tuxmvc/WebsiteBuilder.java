@@ -28,7 +28,7 @@ public class WebsiteBuilder {
         int port = Integer.parseInt(p.getProperty("site.port"));
 
         ResourceGrabber tg = ResourceGrabbers.valueOf(p.getProperty("template.grabber")).build(p.getProperty("template.path"));
-        SimpleEmailManager.SEmailBuilder em = SimpleEmailManager.buildEmailManager(p.getProperty("email.hos t"), p.getProperty("email.port"), TransportStrategy.valueOf(p.getProperty("email.ts")), p.getProperty("email.from"), p.getProperty("email.password"), p.getProperty("email.from.name"));
+        SimpleEmailManager.SEmailBuilder em = SimpleEmailManager.buildEmailManager(p.getProperty("email.host"), p.getProperty("email.port"), TransportStrategy.valueOf(p.getProperty("email.ts")), p.getProperty("email.from"), p.getProperty("email.password"), p.getProperty("email.from.name"));
         TuxJSQL.setup(p);
         TOConnection connection = new TOConnection();
         DatabaseManager dbManager = new SimpleDatabaseManager(connection);
@@ -38,7 +38,7 @@ public class WebsiteBuilder {
             factory = getSslContextFactory(p.getProperty("site.ssl.file"), p.getProperty("site.ssl.password"));
             sslPort = Integer.parseInt(p.getProperty("site.ssl.port"));
         }
-        return new SimpleWebsite(new WebsiteRules(factory != null ? "https" : "http", host), port, file, tg, em, dbManager, factory, sslPort, p.getProperty("tempalte.extension"));
+        return new SimpleWebsite(new WebsiteRules(factory != null ? "https" : "http", host, p.getProperty("site.name")), port, file, tg, em, dbManager, factory, sslPort, p.getProperty("tempalte.extension"));
 
     }
 

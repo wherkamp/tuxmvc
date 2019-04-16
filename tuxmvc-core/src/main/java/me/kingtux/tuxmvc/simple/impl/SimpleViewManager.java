@@ -9,6 +9,7 @@ import me.kingtux.tuxmvc.core.view.ViewVariableGrabber;
 import me.kingtux.tuxmvc.simple.TMSUtils;
 import me.kingtux.tuxmvc.simple.jtwig.RouteFunction;
 import me.kingtux.tuxmvc.simple.jtwig.TuxResourceService;
+import org.apache.commons.io.IOUtils;
 import org.jtwig.JtwigTemplate;
 import org.jtwig.environment.Environment;
 import org.jtwig.environment.EnvironmentConfiguration;
@@ -16,6 +17,7 @@ import org.jtwig.environment.EnvironmentConfigurationBuilder;
 import org.jtwig.environment.EnvironmentFactory;
 import org.jtwig.resource.reference.ResourceReference;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,7 +57,12 @@ public class SimpleViewManager implements ViewManager {
         Environment environment = new EnvironmentFactory().create(configurtation);
         environment.getResourceEnvironment();
         TMSUtils.setFieldValue(environment.getResourceEnvironment(), new TuxResourceService(this), "resourceService");
-        String s = grabber.getFile(view.getTemplate());
+        String s = null;
+        try {
+            s = new String(IOUtils.toByteArray(grabber.getFile(view.getTemplate())));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         if (s == null) return null;
         JtwigTemplate jtwigTemplate = new JtwigTemplate(environment, ResourceReference.inline(s));
         return jtwigTemplate.render(((SimpleView) view).getjTwigModel());

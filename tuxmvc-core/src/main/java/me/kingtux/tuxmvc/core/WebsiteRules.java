@@ -4,11 +4,12 @@ package me.kingtux.tuxmvc.core;
  * This is just the rules for the website
  */
 public class WebsiteRules {
-    private String protocol, host;
+    private String protocol, host, name;
 
-    public WebsiteRules(String protocol, String host) {
+    public WebsiteRules(String protocol, String host, String name) {
         this.protocol = protocol;
         this.host = host;
+        this.name = name;
     }
 
     public String getProtocol() {
@@ -27,4 +28,7 @@ public class WebsiteRules {
         return protocol.equals("https") ? "wss" : "ws" + "://" + host;
     }
 
+    public String name() {
+        return name;
+    }
 }
