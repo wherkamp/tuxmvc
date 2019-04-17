@@ -42,19 +42,19 @@ https://github.com/wherkamp/tuxshortener
 
 ## Features
 #### Version 1.0:
-- `Website.getRoute("my/cool/route") = {"https", "http"}+"://"+ host + {String provided}`
-- CORS
-- Default Template Variables
-- Error Handlers
+- `Website.getRoute("my/cool/route") = {"https", "http"}+"://"+ host + {String provided}`.
+- CORS.
+- Default Template Variables.
+- Error Handlers.
 - Added `Path#template=""`.
-- Added `RequestParam.Type.SESSION` and `RequestParam.Type.COOKIE`
-- Javadocs
+- Added `RequestParam.Type.SESSION` and `RequestParam.Type.COOKIE`.
+- Javadocs.
 #### Version 1.1
 - `RequestParam#addToTemplate()`, default is true.
 - Added `RequestParam#required()`.
 #### Version: 1.2
-- Email Library
-- Bug Fixes
+- Email Library.
+- Bug Fixes.
 
 ## Planned Features 
 #### Version 1.3 - Some things may be postponed.
