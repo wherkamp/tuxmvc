@@ -28,7 +28,7 @@ https://github.com/wherkamp/tuxmvc
 </dependency>
 ```
 #### Gradle
-```
+```js
 repositories {
   maven { url 'http://repo.kingtux.me/repository/maven-public/' }
 }
