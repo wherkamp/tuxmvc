@@ -1,5 +1,6 @@
 package me.kingtux.tuxmvc.simple.impl.email;
 
+import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.emails.EmailManager;
 import org.simplejavamail.email.Email;
@@ -14,7 +15,7 @@ public class SimpleEmailManager implements EmailManager {
     String fromName, from;
 
 
-    public static SEmailBuilder buildEmailManager(String host, String port, TransportStrategy strategy, String from, String fromPassword, String fromName) {
+    public static SEmailBuilder buildEmailManager(String host, String port, String strategy, String from, String fromPassword, String fromName) {
         return new SEmailBuilder(host, port, strategy, from, fromPassword, fromName);
     }
 
@@ -33,6 +34,10 @@ public class SimpleEmailManager implements EmailManager {
 
     @Override
     public void sendEmail(String to, String title, String content) {
+        if (mailer == null) {
+            TuxMVC.TUXMVC_LOGGER.warn("No Email Configuration found skipping!");
+            return;
+        }
         Email email = EmailBuilder.startingBlank().to(to).withSubject(title).withHTMLText(content).from(fromName, from).withReplyTo(from).buildEmail();
         mailer.sendMail(email, true);
     }
@@ -43,10 +48,14 @@ public class SimpleEmailManager implements EmailManager {
         private TransportStrategy strategy;
         private Website site;
 
-        public SEmailBuilder(String host, String port, TransportStrategy strategy, String from, String fromPassword, String fromName) {
+        public SEmailBuilder(String host, String port, String strategy, String from, String fromPassword, String fromName) {
+            if (host.isEmpty() && from.isEmpty() && port.isEmpty()) {
+                TuxMVC.TUXMVC_LOGGER.warn("No Email Configuration found skipping!");
+                return;
+            }
             this.host = host;
             this.port = Integer.parseInt(port);
-            this.strategy = strategy;
+            this.strategy =TransportStrategy.valueOf(strategy);
             this.from = from;
             this.fromPassword = fromPassword;
             this.fromName = fromName;
@@ -59,8 +68,15 @@ public class SimpleEmailManager implements EmailManager {
 
         public EmailManager build() {
             SimpleEmailManager manager = new SimpleEmailManager();
-            manager.mailer = MailerBuilder.withSMTPServer(host, port, from, fromPassword).withTransportStrategy(strategy).buildMailer();
 
+            if (host == null && from == null && port == 0) {
+                return manager;
+            }
+            try {
+                manager.mailer = MailerBuilder.withSMTPServer(host, port, from, fromPassword).withTransportStrategy(strategy).buildMailer();
+            } catch (Exception e) {
+                TuxMVC.TUXMVC_LOGGER.error("Unable to Configure Email Server", e);
+            }
             manager.from = from;
             manager.fromName = fromName;
             manager.site = site;

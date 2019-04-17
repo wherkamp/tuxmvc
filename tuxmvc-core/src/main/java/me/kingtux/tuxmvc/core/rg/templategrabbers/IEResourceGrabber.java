@@ -1,5 +1,6 @@
 package me.kingtux.tuxmvc.core.rg.templategrabbers;
 
+import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.rg.ResourceGrabber;
 
 import java.io.File;
@@ -37,11 +38,17 @@ public class IEResourceGrabber implements ResourceGrabber {
         if (s == null) return null;
         try {
             File externalTemplate = new File(new File(location), s.replace("/", File.separator));
+            TuxMVC.TUXMVC_LOGGER.debug(externalTemplate.getPath());
             if (externalTemplate.exists()) {
                 return externalTemplate.toURI().toURL();
             } else {
                 try {
-                    return getClass().getResource("/" + location + "/" + s);
+                    URL url = getClass().getResource("/" + location + "/" + s);
+                    if(url==null){
+                        TuxMVC.TUXMVC_LOGGER.warn("NO INTERNAL RESOURCE "+ "/" + location + "/" + s);
+                        return null;
+                    }
+                    return url;
                 } catch (Exception e) {
                     return null;
                 }

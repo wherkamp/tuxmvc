@@ -6,7 +6,7 @@ import me.kingtux.tuxmvc.core.request.Request;
 public abstract class DefaultErrorHandlers {
     @EHController(status = 404)
     public void four0four(Request request) {
-        respond("404", request);
+        respond("404.html", request);
     }
 
     protected abstract void respond(String s, Request request);

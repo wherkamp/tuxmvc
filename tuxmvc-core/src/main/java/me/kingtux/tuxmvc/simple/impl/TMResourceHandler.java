@@ -63,7 +63,7 @@ public class TMResourceHandler implements ResourceHandler {
 
         }
         if (urlForFile == null) {
-            urlForFile = grabber.getFile(url);
+            urlForFile = grabber.getFile(url.substring(1));
         }
         if (urlForFile == null) return false;
         try {

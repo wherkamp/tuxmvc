@@ -17,7 +17,7 @@ public class TuxResourceReferenceExtractor implements ResourceReferenceExtractor
     @Override
     public ResourceReference extract(String s) {
         try {
-            return ResourceReference.inline(new String(IOUtils.toByteArray(manager.getResourceGrabber().getFile(s + ".html").openStream())));
+            return ResourceReference.inline(new String(IOUtils.toByteArray(manager.getResourceGrabber().getFile(s + ((s.toLowerCase().endsWith(manager.getExtension()) || s.toLowerCase().toLowerCase().endsWith(".html")) ? "" : manager.getExtension())).openStream())));
         } catch (IOException e) {
             e.printStackTrace();
         }

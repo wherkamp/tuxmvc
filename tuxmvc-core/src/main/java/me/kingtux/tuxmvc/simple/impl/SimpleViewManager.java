@@ -1,5 +1,6 @@
 package me.kingtux.tuxmvc.simple.impl;
 
+import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.request.Request;
 import me.kingtux.tuxmvc.core.rg.ResourceGrabber;
@@ -17,7 +18,7 @@ import org.jtwig.environment.EnvironmentConfigurationBuilder;
 import org.jtwig.environment.EnvironmentFactory;
 import org.jtwig.resource.reference.ResourceReference;
 
-import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,22 +51,35 @@ public class SimpleViewManager implements ViewManager {
 
     @Override
     public String parseView(ResourceGrabber grabber, View view) {
-        if (!view.getTemplate().toLowerCase().endsWith(extension)) {
+        if(view.getTemplate().isEmpty()){
+            return null;
+        }
+        //Checks rather it ends with the set extension or .html. If not add the set extension
+        if (!view.getTemplate().toLowerCase().endsWith(extension) && !view.getTemplate().toLowerCase().endsWith(".html")) {
             view.setTemplate(view.getTemplate() + extension);
         }
+        TuxMVC.TUXMVC_LOGGER.debug("Locating template "+ view.getTemplate());
         // Just understand if this breaks I will be on the floor crying
         Environment environment = new EnvironmentFactory().create(configurtation);
         environment.getResourceEnvironment();
         TMSUtils.setFieldValue(environment.getResourceEnvironment(), new TuxResourceService(this), "resourceService");
         String s = null;
         try {
-            s = new String(IOUtils.toByteArray(grabber.getFile(view.getTemplate())));
-        } catch (IOException e) {
-            e.printStackTrace();
+            URL url = grabber.getFile(view.getTemplate());
+            if (url == null) {
+                TuxMVC.TUXMVC_LOGGER.error("Unable to find "+ view.getTemplate());
+                return null;
+            }
+            s = new String(IOUtils.toByteArray(url));
+        } catch (Exception e) {
+            TuxMVC.TUXMVC_LOGGER.error("Unable to find " + view.getTemplate(), e);
         }
-        if (s == null) return null;
+        if (s == null) {
+            return null;
+        }
         JtwigTemplate jtwigTemplate = new JtwigTemplate(environment, ResourceReference.inline(s));
         return jtwigTemplate.render(((SimpleView) view).getjTwigModel());
+
     }
 
     @Override
@@ -95,6 +109,11 @@ public class SimpleViewManager implements ViewManager {
     @Override
     public String getExtension() {
         return extension;
+    }
+
+    @Override
+    public void setExtension(String extension) {
+        this.extension = extension;
     }
 
 

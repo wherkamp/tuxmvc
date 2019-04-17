@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/tuxmvc-core/tmvc-core.iml" filepath="$PROJECT_DIR$/tuxmvc-core/tmvc-core.iml" />
       <module fileurl="file://$PROJECT_DIR$/tuxmvc-security/tmvc-security.iml" filepath="$PROJECT_DIR$/tuxmvc-security/tmvc-security.iml" />
       <module fileurl="file://$PROJECT_DIR$/tuxmvc.iml" filepath="$PROJECT_DIR$/tuxmvc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tuxmvc-core/tuxmvc-core.iml" filepath="$PROJECT_DIR$/tuxmvc-core/tuxmvc-core.iml" />
     </modules>
   </component>
 </project>

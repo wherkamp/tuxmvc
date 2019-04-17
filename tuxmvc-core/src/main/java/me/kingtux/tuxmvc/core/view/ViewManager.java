@@ -52,4 +52,6 @@ public interface ViewManager {
     void registerViewVariableGrabber(String key, ViewVariableGrabber value);
 
     String getExtension();
+
+    void setExtension(String extension);
 }

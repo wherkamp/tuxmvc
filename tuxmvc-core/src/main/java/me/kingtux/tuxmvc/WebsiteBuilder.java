@@ -19,16 +19,19 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class WebsiteBuilder {
+    private Properties siteProperties = new Properties();
+
     private WebsiteBuilder() {
     }
 
     public static Website buildFromProperties(Properties p) {
-        String host = p.getProperty("site.host");
-        File file = new File(p.getProperty("site.static"));
+        String host = p.getProperty("site.url");
+        File file = new File(p.getProperty("site.static", "public"));
         int port = Integer.parseInt(p.getProperty("site.port"));
 
-        ResourceGrabber tg = ResourceGrabbers.valueOf(p.getProperty("template.grabber")).build(p.getProperty("template.path"));
-        SimpleEmailManager.SEmailBuilder em = SimpleEmailManager.buildEmailManager(p.getProperty("email.host"), p.getProperty("email.port"), TransportStrategy.valueOf(p.getProperty("email.ts")), p.getProperty("email.from"), p.getProperty("email.password"), p.getProperty("email.from.name"));
+        ResourceGrabber tg = ResourceGrabbers.valueOf(p.getProperty("template.grabber", "INTERNAL_EXTERNAL_GRABBER")).build(p.getProperty("template.path"));
+        SimpleEmailManager.SEmailBuilder em = SimpleEmailManager.buildEmailManager(p.getProperty("email.host", ""), p.getProperty("email.port", ""),
+                p.getProperty("email.ts", "SMTP"), p.getProperty("email.from",""), p.getProperty("email.password", ""), p.getProperty("email.from.name", ""));
         TuxJSQL.setup(p);
         TOConnection connection = new TOConnection();
         DatabaseManager dbManager = new SimpleDatabaseManager(connection);
@@ -38,8 +41,26 @@ public class WebsiteBuilder {
             factory = getSslContextFactory(p.getProperty("site.ssl.file"), p.getProperty("site.ssl.password"));
             sslPort = Integer.parseInt(p.getProperty("site.ssl.port"));
         }
-        return new SimpleWebsite(new WebsiteRules(factory != null ? "https" : "http", host, p.getProperty("site.name")), port, file, tg, em, dbManager, factory, sslPort, p.getProperty("tempalte.extension"));
+        return new SimpleWebsite(new WebsiteRules(host, p.getProperty("site.name")), port, file, tg, em, dbManager, factory, sslPort, p.getProperty("tempalte.extension"));
+    }
 
+    public static WebsiteBuilder buildFromScratch() {
+        return new WebsiteBuilder();
+    }
+
+    public static WebsiteBuilder buildFromAlreadyExistingProperties(Properties properties) {
+        WebsiteBuilder builder = new WebsiteBuilder();
+        builder.siteProperties = new Properties();
+        return builder;
+    }
+
+    public WebsiteBuilder baseURL(String url) {
+        siteProperties.setProperty("site.url", url);
+        return this;
+    }
+
+    public Website build() {
+        return buildFromProperties(siteProperties);
     }
 
     public static SslContextFactory getSslContextFactory(String file, String password) {
