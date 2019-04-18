@@ -15,7 +15,7 @@ public class SimpleWSSession implements WSSession {
     }
 
     public String queryParam(String key) {
-        return session.queryParam(key);
+        return session.queryParam(key,null);
     }
 
     public void close() {

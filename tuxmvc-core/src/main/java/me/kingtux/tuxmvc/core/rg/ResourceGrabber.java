@@ -12,7 +12,9 @@ public interface ResourceGrabber {
 
     @Deprecated
     default URL getFile(String s) {
-        return getResource(s).getUrl();
+        Resource resource = getResource(s);
+        if(resource ==null) return null;
+        return resource.getUrl();
     }
 
     /**

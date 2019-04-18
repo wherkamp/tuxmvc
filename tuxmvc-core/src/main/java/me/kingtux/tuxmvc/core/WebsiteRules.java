@@ -11,6 +11,14 @@ public class WebsiteRules {
         this.name = name;
     }
 
+    @Override
+    public String toString() {
+        return "WebsiteRules{" +
+                "url='" + url + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
+
     public String getHost() {
         return url.replace("https://", "").replace("http://", "");
     }
