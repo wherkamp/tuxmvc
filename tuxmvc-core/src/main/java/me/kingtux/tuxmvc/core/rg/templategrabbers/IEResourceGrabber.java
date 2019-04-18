@@ -1,9 +1,12 @@
 package me.kingtux.tuxmvc.core.rg.templategrabbers;
 
-import me.kingtux.tuxmvc.TuxMVC;
+import me.kingtux.tuxmvc.core.rg.Resource;
 import me.kingtux.tuxmvc.core.rg.ResourceGrabber;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 
@@ -30,34 +33,22 @@ public class IEResourceGrabber implements ResourceGrabber {
         location = s;
     }
 
-
-
-    @SuppressWarnings("Duplicates")
     @Override
-    public URL getFile(final String s) {
+    public Resource getResource(String s) {
         if (s == null) return null;
+        Resource resource = null;
         try {
             File externalTemplate = new File(new File(location), s.replace("/", File.separator));
-            TuxMVC.TUXMVC_LOGGER.debug(externalTemplate.getPath());
             if (externalTemplate.exists()) {
-                return externalTemplate.toURI().toURL();
+                resource = new Resource(IOUtils.toByteArray(new FileInputStream(externalTemplate)), externalTemplate.toURI().toURL(), FilenameUtils.getExtension(externalTemplate.getAbsolutePath()));
             } else {
-                try {
-                    URL url = getClass().getResource("/" + location + "/" + s);
-                    if(url==null){
-                        TuxMVC.TUXMVC_LOGGER.warn("NO INTERNAL RESOURCE "+ "/" + location + "/" + s);
-                        return null;
-                    }
-                    return url;
-                } catch (Exception e) {
-                    return null;
-                }
+                URL url = getClass().getResource("/" + location + "/" + s);
+                if (url == null) return null;
+                resource = new Resource(IOUtils.toByteArray(getClass().getResourceAsStream("/" + location + "/" + s)), url, null);
             }
-        } catch (NullPointerException ignored) {
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return resource;
     }
 }

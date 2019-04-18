@@ -3,7 +3,6 @@ package me.kingtux.tuxmvc.simple.impl;
 
 import io.javalin.Javalin;
 import io.javalin.core.HandlerType;
-import io.javalin.core.JavalinConfig;
 import me.kingtux.simpleannotation.MethodFinder;
 import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.Website;
@@ -19,7 +18,6 @@ import me.kingtux.tuxmvc.core.request.RequestType;
 import me.kingtux.tuxmvc.core.rg.ResourceGrabber;
 import me.kingtux.tuxmvc.core.view.ViewManager;
 import me.kingtux.tuxmvc.core.ws.WSHandler;
-import me.kingtux.tuxmvc.simple.TMSUtils;
 import me.kingtux.tuxmvc.simple.impl.email.SimpleEmailManager;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -173,5 +171,9 @@ public class SimpleWebsite implements Website {
 
     public DatabaseManager getDbManager() {
         return dbManager;
+    }
+
+    void setWebsiteRules(WebsiteRules websiteRules) {
+        this.websiteRules = websiteRules;
     }
 }

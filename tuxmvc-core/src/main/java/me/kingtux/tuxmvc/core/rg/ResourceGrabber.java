@@ -10,9 +10,17 @@ import java.net.URL;
  */
 public interface ResourceGrabber {
 
-    URL getFile(String s);
+    @Deprecated
+    default URL getFile(String s) {
+        return getResource(s).getUrl();
+    }
 
-
+    /**
+     * Returns a resource based on the path
+     * @param s the path to the file.
+     * @return The Resource null if not found
+     */
+    Resource getResource(String s);
 
     String getLocation();
 
