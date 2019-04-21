@@ -4,7 +4,7 @@
 #### Javadocs
 https://docs.kingtux.me/tuxmvc/
 #### Wiki
-https://github.com/wherkamp/tuxmvc
+https://github.com/wherkamp/tuxmvc/wiki
 
 ## Installation
 #### Maven
