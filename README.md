@@ -1,9 +1,5 @@
 # TuxMVC
 
-## TuxMVC thought process explained
-Alright TuxMVC is a MVC (model view controller). 
-
-
 ## Documentation
 #### Javadocs
 https://docs.kingtux.me/tuxmvc/
