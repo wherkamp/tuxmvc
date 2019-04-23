@@ -3,6 +3,7 @@ package me.kingtux.tuxmvc.simple.impl.email;
 import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.emails.EmailManager;
+import org.hazlewood.connor.bottema.emailaddress.EmailAddressValidator;
 import org.simplejavamail.email.Email;
 import org.simplejavamail.email.EmailBuilder;
 import org.simplejavamail.mailer.Mailer;
@@ -40,6 +41,12 @@ public class SimpleEmailManager implements EmailManager {
         }
         Email email = EmailBuilder.startingBlank().to(to).withSubject(title).withHTMLText(content).from(fromName, from).withReplyTo(from).buildEmail();
         mailer.sendMail(email, true);
+    }
+
+    @Override
+    public boolean isEmail(String s) {
+        return EmailAddressValidator.isValid(s);
+
     }
 
     public static class SEmailBuilder {

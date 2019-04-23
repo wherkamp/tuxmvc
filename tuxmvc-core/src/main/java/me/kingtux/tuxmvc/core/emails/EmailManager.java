@@ -14,4 +14,5 @@ public interface EmailManager {
         sendEmail(to, title, getWebsite().getViewManager().parseView(content));
     }
 
+    boolean isEmail(String s);
 }

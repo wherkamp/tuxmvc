@@ -45,7 +45,7 @@ public class SimpleWebsite implements Website {
         this.websiteRules = websiteRules;
 
         javalin = Javalin.create(c -> {
-            c.inner.resourceHandler = new TMResourceHandler();
+            c.inner.resourceHandler = new TMResourceHandler(this);
             c.sessionHandler(SessionHandler::new);
             c.wsFactoryConfig(webSocketServletFactory -> {
                 try {

@@ -3,6 +3,7 @@ package me.kingtux.tuxmvc.simple.impl;
 import io.javalin.staticfiles.ResourceHandler;
 import io.javalin.staticfiles.StaticFileConfig;
 import me.kingtux.tuxmvc.TuxMVC;
+import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.request.MimeType;
 import me.kingtux.tuxmvc.core.rg.ResourceGrabber;
 import me.kingtux.tuxmvc.core.rg.templategrabbers.IEResourceGrabber;
@@ -17,7 +18,11 @@ import java.net.URL;
 
 public class TMResourceHandler implements ResourceHandler {
     private ResourceGrabber grabber = new IEResourceGrabber("public");
+private Website website;
 
+    public TMResourceHandler(Website website) {
+        this.website = website;
+    }
 
     @Override
     public void addStaticFileConfig(@NotNull StaticFileConfig staticFileConfig) {

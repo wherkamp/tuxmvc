@@ -38,8 +38,15 @@ public class WebsiteBuilder {
         ResourceGrabber tg = ResourceGrabbers.valueOf(p.getProperty("template.grabber", "INTERNAL_EXTERNAL_GRABBER")).build(p.getProperty("template.path"));
         SimpleEmailManager.SEmailBuilder em = SimpleEmailManager.buildEmailManager(p.getProperty("email.host", ""), p.getProperty("email.port", ""),
                 p.getProperty("email.ts", "SMTP"), p.getProperty("email.from",""), p.getProperty("email.password", ""), p.getProperty("email.from.name", ""));
-        TuxJSQL.setup(p);
-        TOConnection connection = new TOConnection();
+
+        TOConnection connection;
+        if(p.getProperty("db.type", null)==null){
+            Properties tempDB = new Properties();
+            tempDB.setProperty("db.type", "SQLITE");
+            tempDB.setProperty("db.file", "db.db");
+            connection = new TOConnection(TuxJSQL.setup(tempDB));
+        }else
+            connection = new TOConnection(TuxJSQL.setup(p));
         DatabaseManager dbManager = new SimpleDatabaseManager(connection);
         SslContextFactory factory = null;
         int sslPort = 0;
