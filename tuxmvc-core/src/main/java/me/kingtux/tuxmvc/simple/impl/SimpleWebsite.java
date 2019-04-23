@@ -3,8 +3,6 @@ package me.kingtux.tuxmvc.simple.impl;
 
 import io.javalin.Javalin;
 import io.javalin.core.HandlerType;
-import io.javalin.core.JavalinServlet;
-import io.javalin.staticfiles.Location;
 import me.kingtux.simpleannotation.MethodFinder;
 import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.Website;
@@ -20,11 +18,11 @@ import me.kingtux.tuxmvc.core.request.RequestType;
 import me.kingtux.tuxmvc.core.rg.ResourceGrabber;
 import me.kingtux.tuxmvc.core.view.ViewManager;
 import me.kingtux.tuxmvc.core.ws.WSHandler;
-import me.kingtux.tuxmvc.simple.TMSUtils;
 import me.kingtux.tuxmvc.simple.impl.email.SimpleEmailManager;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,38 +43,44 @@ public class SimpleWebsite implements Website {
 
     public SimpleWebsite(WebsiteRules websiteRules, int port, File file, ResourceGrabber tg, SimpleEmailManager.SEmailBuilder em, DatabaseManager dbManager, SslContextFactory sslContextFactory, int sslPort, String property) {
         this.websiteRules = websiteRules;
-        Javalin javalin = Javalin.create().enableStaticFiles(file.getPath(), Location.EXTERNAL).enableWebJars();
-                //enableStaticFiles("META-INF/resources/webjars/");
 
-        if (sslContextFactory != null) {
-            TUXMVC_LOGGER.debug("Using SSL Server!");
-            javalin.server(() -> {
-                Server server = new Server();
-                ServerConnector sslConnector = new ServerConnector(server, sslContextFactory);
-                sslConnector.setPort(sslPort);
-                ServerConnector connector = new ServerConnector(server);
-                connector.setPort(port);
-                server.setConnectors(new Connector[]{sslConnector, connector});
-                return server;
+        javalin = Javalin.create(c -> {
+            c.inner.resourceHandler = new TMResourceHandler(this);
+            c.sessionHandler(SessionHandler::new);
+            c.wsFactoryConfig(webSocketServletFactory -> {
+                try {
+                    webSocketServletFactory.start();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             });
-        } else {
-            TUXMVC_LOGGER.debug("Starting Regular Website");
-            javalin.port(port);
-        }
+            if (sslContextFactory != null) {
 
+                TUXMVC_LOGGER.debug("Using SSL Server!");
+                c.server(() -> {
+                    Server server = new Server();
+                    ServerConnector sslConnector = new ServerConnector(server, sslContextFactory);
+                    sslConnector.setPort(sslPort);
+                    ServerConnector connector = new ServerConnector(server);
+                    connector.setPort(port);
+                    server.setConnectors(new Connector[]{sslConnector, connector});
+                    return server;
+                });
 
-        javalin.start();
+            } else {
+                TUXMVC_LOGGER.debug("Starting Regular Website");
+            }
+
+        }).start(port);
+
         emailManager = em.setSite(this).build();
         ((SimpleEmailManager) emailManager).setSite(this);
         this.dbManager = dbManager;
         if (!file.exists()) file.mkdir();
 
-
-        this.javalin = javalin;
-
         viewManager = new SimpleViewManager(tg, this, property);
         registerErrorHandler(new SimpleErrorHandler(this));
-        TuxMVC.TUXMVC_LOGGER.info("Site is ready! Go to " + this.websiteRules.baseURL());
+        TuxMVC.TUXMVC_LOGGER.info(String.format("%s is ready! Go to %s", this.websiteRules.name(), this.websiteRules.baseURL()));
     }
 
 
@@ -100,13 +104,15 @@ public class SimpleWebsite implements Website {
     @Override
     public void registerWebsocketHandler(WSHandler eh) {
         String path = eh.getClass().getAnnotation(Websocket.class).path();
+        //TuxMVC.TUXMVC_LOGGER.warn("Websockets are in early development");
         TUXMVC_LOGGER.debug(path + " -> " + eh.getClass().getSimpleName());
         javalin.ws(path, ws -> {
             ws.onConnect(session -> eh.onConnect(new SimpleWSSession(session)));
-            ws.onMessage((session, message) -> eh.onMessage(new SimpleWSSession(session), message));
-            ws.onClose((session, statusCode, reason) -> eh.onClose(new SimpleWSSession(session), statusCode, reason));
-            ws.onError((session, throwable) -> eh.onError(new SimpleWSSession(session), throwable));
+            ws.onMessage(wsMessageContext -> eh.onMessage(new SimpleWSSession(wsMessageContext), wsMessageContext.message()));
+            ws.onError(e -> eh.onError(new SimpleWSSession(e), e.getError()));
+            ws.onClose(c -> eh.onClose(new SimpleWSSession(c), c.getStatusCode(), c.getReason()));
         });
+
     }
 
     private HandlerType getHandlerType(RequestType requestType) {
@@ -165,5 +171,9 @@ public class SimpleWebsite implements Website {
 
     public DatabaseManager getDbManager() {
         return dbManager;
+    }
+
+    void setWebsiteRules(WebsiteRules websiteRules) {
+        this.websiteRules = websiteRules;
     }
 }

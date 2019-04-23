@@ -3,4 +3,4 @@
 *.class
 */target/
 target/
-test/
+/test/

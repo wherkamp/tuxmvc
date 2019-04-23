@@ -8,8 +8,8 @@ public class    TMSUtils {
         try {
             Field field = o.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
-            return field;
-        } catch (NoSuchFieldException e) {
+            return field.get(o);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
         return null;

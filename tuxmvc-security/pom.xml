@@ -7,11 +7,11 @@
     <parent>
         <groupId>me.kingtux</groupId>
         <artifactId>tuxmvc</artifactId>
-        <version>1.1</version>
+        <version>1.2</version>
     </parent>
 
     <artifactId>tuxmvc-security</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 
     <distributionManagement>
         <repository>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WS :: {{sr.name}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{{sr.baseURL}}/assets/libs/bootstrap/css/bootstrap.css">
+</head>
+<body>
+<div class="container">
+    <h1>Welcome to the Discord Killer</h1>
+<div id="messages">
+</div>
+<br>
+<div id="message-box">
+    <div class="form-group">
+        <label for="message">Comment:</label>
+        <textarea class="form-control" rows="2" id="message"></textarea>
+    </div>
+</div>
+    <div class="form-group">
+        <label for="name">Set Name:</label>
+        <input class="form-control" placeholder="Bobby Joe"  id="name" >
+        <button onclick="setName()">Set Name</button>
+    </div>
+</div>
+<script src="{{sr.baseURL}}/assets/libs/jquery/jquery.js"></script>
+<script src="{{sr.baseURL}}/assets/libs/popper.js/umd/popper.min.js" ></script>
+<script src="{{sr.baseURL}}/assets/libs/bootstrap/js/bootstrap.min.js"></script>
+<script>
+    var shiftPressed;
+
+    $(document).on('keyup keydown', function(e){shiftPressed = e.shiftKey} );
+
+
+var input = document.getElementById("message");
+
+    // Execute a function when the user releases a key on the keyboard
+    input.addEventListener("keyup", function(event) {
+        // Number 13 is the "Enter" key on the keyboard
+        if ("Enter" === event.code && !shiftPressed) {
+            // Cancel the default action, if needed
+            event.preventDefault();
+            send()
+        }
+    });
+    function htmlEncode ( html )
+    {
+        html = $.trim(html);
+        return html.replace(/[&"'\<\>]/g, function(c)
+        {
+            switch (c)
+            {
+                case "&":
+                    return "&amp;";
+                case "'":
+                    return "&#39;";
+                case '"':
+                    return "&quot;";
+                case "<":
+                    return "&lt;";
+                default:
+                    return "&gt;";
+            }
+        });
+    };
+
+
+
+    var ws = new WebSocket('{{sr.baseWSURL}}/ws/test1?me='+findGetParameter("me"));
+    var messages = document.getElementById("messages");
+        ws.onmessage = function (ev) {
+        var obj = JSON.parse(ev.data);
+        console.log(ev.data);
+        if(obj.goal==="message") {
+            var div = document.createElement("div");
+            div.classList.add("item");
+            var h1 = document.createElement('code');
+            //.replace("&","&amp;").replace("<", "&lt;").replace(">","&gt;")
+            var mstr = htmlEncode(obj.message).replace(/(?:\r\n|\r|\n)/g, '<br>');
+            //.replace(/(?:\r\n|\r|\n)/g, '<br>');
+            h1.innerHTML = obj.author + ": " + mstr;
+
+            div.appendChild(h1);
+            messages.appendChild(div);
+            messages.appendChild(document.createElement("br"));
+            messages.scrollTop = messages.scrollHeight;
+        }else if(obj.goal==="keep-alive"){
+            ws.send(ev.data)
+        }
+    };
+
+    function send() {
+        if(findGetParameter("me") ===null){
+            alert("Please SET A NAME GAY");
+
+            return;
+        }
+        var message = document.getElementById("message");
+        if(message.value===""){
+            return;
+        }
+        if(!message.value.replace(/\s/g, '').length){
+            return;
+        }
+        if(findGetParameter("me")===""|| !findGetParameter("me").replace(/\s/g, '').length ){
+            alert("Please SET A NAME GAY");
+            return;
+        }
+        if(message.value==="stop"){
+            ws.close(200, "End");
+          return;
+        }
+        var json = JSON.parse("{}");
+        json.goal = "message";
+        json.message=message.value;//.substr(0,message.value.length-2);
+        ws.send(JSON.stringify(json));
+        message.value = "";
+    }
+    function findGetParameter(parameterName) {
+        var result = null,
+            tmp = [];
+        var items = location.search.substr(1).split("&");
+        for (var index = 0; index < items.length; index++) {
+            tmp = items[index].split("=");
+            if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+        }
+        return result;
+    }
+    function setName() {
+        $(location).attr('href', '{{route("hey")}}?me='+document.getElementById("name").value)
+    }
+</script>
+</body>
+<style>
+    .item{
+        border-width: 2px;
+        border-color: black;
+
+    }
+    .item pre{
+        color: red;
+    }
+    #messages{
+        height: 250px;
+        overflow-y: scroll;
+    }
+</style>
+</html>

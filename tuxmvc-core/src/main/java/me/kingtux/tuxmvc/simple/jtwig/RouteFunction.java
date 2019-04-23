@@ -18,6 +18,7 @@ public class RouteFunction extends SimpleJtwigFunction {
 
     @Override
     public Object execute(FunctionRequest functionRequest) {
+
         return site.route((String) functionRequest.get(0));
     }
 }

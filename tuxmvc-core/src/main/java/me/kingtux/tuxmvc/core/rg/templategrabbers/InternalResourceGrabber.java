@@ -1,11 +1,11 @@
 package me.kingtux.tuxmvc.core.rg.templategrabbers;
 
+import me.kingtux.tuxmvc.core.rg.Resource;
 import me.kingtux.tuxmvc.core.rg.ResourceGrabber;
-import me.kingtux.tuxutils.core.CommonUtils;
+import org.apache.commons.io.IOUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * This template grabber only grabs the internal one. The one inside the jar file;
@@ -17,17 +17,19 @@ public class InternalResourceGrabber implements ResourceGrabber {
         this.location = location;
     }
 
-    @SuppressWarnings("Duplicates")
-    @Override
-    public String getFile(String s) {
-        try {
-            InputStream is = getClass().getResourceAsStream("/"+location + "/" + s );
-            return CommonUtils.bufferedReaderToString(new BufferedReader(new InputStreamReader(is)));
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
+    @Override
+    public Resource getResource(String s) {
+        String path = "/" + location + "/" + s;
+        URL url = getClass().getResource(path);
+        if (url == null) return null;
+        try {
+            return new Resource(IOUtils.toByteArray(getClass().getResourceAsStream(path)), url, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 
     @Override
