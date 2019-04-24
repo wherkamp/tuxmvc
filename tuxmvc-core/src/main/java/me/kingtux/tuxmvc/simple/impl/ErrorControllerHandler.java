@@ -1,6 +1,6 @@
 package me.kingtux.tuxmvc.simple.impl;
 
-import io.javalin.Context;
+import io.javalin.http.Context;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.controller.ControllerExeception;
 import me.kingtux.tuxmvc.core.controller.ControllerExecutor;

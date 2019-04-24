@@ -5,9 +5,9 @@ import me.kingtux.tuxmvc.core.request.UploadedFile;
 import java.io.InputStream;
 
 public class SimpleUploadedFile implements UploadedFile {
-    private io.javalin.UploadedFile jUF;
+    private io.javalin.http.UploadedFile jUF;
 
-    public SimpleUploadedFile(io.javalin.UploadedFile jUF) {
+    public SimpleUploadedFile(io.javalin.http.UploadedFile jUF) {
         this.jUF = jUF;
     }
 

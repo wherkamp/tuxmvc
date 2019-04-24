@@ -23,7 +23,7 @@ public class ExternalResourceGrabber implements ResourceGrabber {
         File templateFile = new File(new File(location), s.replace("/", File.separator));
         if (!templateFile.exists()) return null;
         try {
-            return new Resource(IOUtils.toByteArray(new FileInputStream(templateFile)), templateFile.toURI().toURL(), FilenameUtils.getExtension(templateFile.getAbsolutePath()));
+            return new Resource(IOUtils.toByteArray(new FileInputStream(templateFile)), templateFile.toURI().toURL(), this,FilenameUtils.getExtension(templateFile.getAbsolutePath()));
         } catch (IOException e) {
             e.printStackTrace();
         }

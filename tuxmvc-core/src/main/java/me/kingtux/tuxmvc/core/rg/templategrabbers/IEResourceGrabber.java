@@ -40,11 +40,11 @@ public class IEResourceGrabber implements ResourceGrabber {
         try {
             File externalTemplate = new File(new File(location), s.replace("/", File.separator));
             if (externalTemplate.exists()) {
-                resource = new Resource(IOUtils.toByteArray(new FileInputStream(externalTemplate)), externalTemplate.toURI().toURL(), FilenameUtils.getExtension(externalTemplate.getAbsolutePath()));
+                resource = new Resource(IOUtils.toByteArray(new FileInputStream(externalTemplate)), externalTemplate.toURI().toURL(), this,FilenameUtils.getExtension(externalTemplate.getAbsolutePath()));
             } else {
                 URL url = getClass().getResource("/" + location + "/" + s);
                 if (url == null) return null;
-                resource = new Resource(IOUtils.toByteArray(getClass().getResourceAsStream("/" + location + "/" + s)), url, null);
+                resource = new Resource(IOUtils.toByteArray(getClass().getResourceAsStream("/" + location + "/" + s)), url,this, null);
             }
         } catch (IOException e) {
             e.printStackTrace();

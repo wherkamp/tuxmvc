@@ -1,7 +1,8 @@
 package me.kingtux.tuxmvc.simple.impl;
 
-import io.javalin.staticfiles.ResourceHandler;
-import io.javalin.staticfiles.StaticFileConfig;
+
+import io.javalin.http.staticfiles.ResourceHandler;
+import io.javalin.http.staticfiles.StaticFileConfig;
 import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.request.MimeType;
@@ -68,7 +69,7 @@ private Website website;
 
         }
         if (urlForFile == null) {
-            urlForFile = grabber.getFile(url.substring(1));
+            urlForFile = grabber    .getFile(url.substring(1));
         }
         if (urlForFile == null) return false;
         try {

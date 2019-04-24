@@ -1,9 +1,12 @@
 package me.kingtux.tuxmvc.core;
 
+import me.kingtux.tuxmvc.WebsiteBuilder;
 import me.kingtux.tuxmvc.core.emails.EmailManager;
 import me.kingtux.tuxmvc.core.model.DatabaseManager;
 import me.kingtux.tuxmvc.core.view.ViewManager;
 import me.kingtux.tuxmvc.core.ws.WSHandler;
+
+import java.util.Properties;
 
 @SuppressWarnings("ALL")
 public interface Website {
@@ -68,6 +71,11 @@ public interface Website {
      */
     void setCORS(String value);
 
+
+    Environment getEnvironment();
     String getCORS();
      DatabaseManager getDBManager();
+
+    Properties getInternalProperties();
+
 }

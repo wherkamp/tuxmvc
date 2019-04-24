@@ -2,9 +2,10 @@ package me.kingtux.tuxmvc.simple.impl;
 
 
 import io.javalin.Javalin;
-import io.javalin.core.HandlerType;
+import io.javalin.http.HandlerType;
 import me.kingtux.simpleannotation.MethodFinder;
 import me.kingtux.tuxmvc.TuxMVC;
+import me.kingtux.tuxmvc.core.Environment;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.WebsiteRules;
 import me.kingtux.tuxmvc.core.annotations.Controller;
@@ -16,6 +17,7 @@ import me.kingtux.tuxmvc.core.errorhandler.annotations.EHController;
 import me.kingtux.tuxmvc.core.model.DatabaseManager;
 import me.kingtux.tuxmvc.core.request.RequestType;
 import me.kingtux.tuxmvc.core.rg.ResourceGrabber;
+import me.kingtux.tuxmvc.core.rg.ResourceGrabbers;
 import me.kingtux.tuxmvc.core.view.ViewManager;
 import me.kingtux.tuxmvc.core.ws.WSHandler;
 import me.kingtux.tuxmvc.simple.impl.email.SimpleEmailManager;
@@ -27,8 +29,9 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Properties;
 
 
 public class SimpleWebsite implements Website {
@@ -39,11 +42,50 @@ public class SimpleWebsite implements Website {
     private EmailManager emailManager;
     private WebsiteRules websiteRules;
     public static Logger TUXMVC_LOGGER = LoggerFactory.getLogger(TuxMVC.class);
+    private Properties internalProperties;
+    private Environment environment;
 
-
-    public SimpleWebsite(WebsiteRules websiteRules, int port, File file, ResourceGrabber tg, SimpleEmailManager.SEmailBuilder em, DatabaseManager dbManager, SslContextFactory sslContextFactory, int sslPort, String property) {
+    public SimpleWebsite(WebsiteRules websiteRules, int port, SimpleEmailManager.SEmailBuilder em, DatabaseManager dbManager, SslContextFactory sslContextFactory, int sslPort, Environment environment) {
         this.websiteRules = websiteRules;
+        this.environment = environment;
 
+        loadInternalProperties();
+
+        initJavalin(sslContextFactory, port, sslPort);
+        emailManager = em.setSite(this).build();
+        this.dbManager = dbManager;
+        registerErrorHandler(new SimpleErrorHandler(this));
+
+        createViewManager();
+
+        javalin.start(port);
+        TuxMVC.TUXMVC_LOGGER.info(String.format("%s is ready! Go to %s", this.websiteRules.name(), this.websiteRules.baseURL()));
+    }
+
+    private void loadInternalProperties() {
+    internalProperties = new Properties();
+        try {
+            internalProperties.load(SimpleWebsite.class.getResourceAsStream("/tuxmvc.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createViewManager() {
+        ResourceGrabber resourceGrabber = ResourceGrabbers.valueOf(getInternalProperties().getProperty("template.grabber", "INTERNAL_EXTERNAL_GRABBER")).build(getInternalProperties().getProperty("template.path"));
+        viewManager = new SimpleViewManager(resourceGrabber, this, getInternalProperties().getProperty("tempalte.extension"));
+    }
+
+
+    public void registerController(Object controller) {
+        for (Method method : MethodFinder.getAllMethodsWithAnnotation(controller.getClass(), Controller.class)) {
+            SingleController sc = new SingleController(controller, method);
+            TUXMVC_LOGGER.debug(sc.getPath() + " -> " + controller.getClass().getSimpleName() + "#" + method.getName());
+            javalin.addHandler(getHandlerType(sc.getRequestType()), sc.getPath(), new ControllerHandler(sc, this)::execute);
+        }
+    }
+
+    private void initJavalin(SslContextFactory sslContextFactory, int port, int sslPort) {
         javalin = Javalin.create(c -> {
             c.inner.resourceHandler = new TMResourceHandler(this);
             c.sessionHandler(SessionHandler::new);
@@ -71,27 +113,8 @@ public class SimpleWebsite implements Website {
                 TUXMVC_LOGGER.debug("Starting Regular Website");
             }
 
-        }).start(port);
-
-        emailManager = em.setSite(this).build();
-        ((SimpleEmailManager) emailManager).setSite(this);
-        this.dbManager = dbManager;
-        if (!file.exists()) file.mkdir();
-
-        viewManager = new SimpleViewManager(tg, this, property);
-        registerErrorHandler(new SimpleErrorHandler(this));
-        TuxMVC.TUXMVC_LOGGER.info(String.format("%s is ready! Go to %s", this.websiteRules.name(), this.websiteRules.baseURL()));
+        });
     }
-
-
-    public void registerController(Object controller) {
-        for (Method method : MethodFinder.getAllMethodsWithAnnotation(controller.getClass(), Controller.class)) {
-            SingleController sc = new SingleController(controller, method);
-            TUXMVC_LOGGER.debug(sc.getPath() + " -> " + controller.getClass().getSimpleName() + "#" + method.getName());
-            javalin.addHandler(getHandlerType(sc.getRequestType()), sc.getPath(), new ControllerHandler(sc, this)::execute);
-        }
-    }
-
     @Override
     public void registerErrorHandler(Object errorHandler) {
         for (Method method : MethodFinder.getAllMethodsWithAnnotation(errorHandler.getClass(), EHController.class)) {
@@ -109,8 +132,8 @@ public class SimpleWebsite implements Website {
         javalin.ws(path, ws -> {
             ws.onConnect(session -> eh.onConnect(new SimpleWSSession(session)));
             ws.onMessage(wsMessageContext -> eh.onMessage(new SimpleWSSession(wsMessageContext), wsMessageContext.message()));
-            ws.onError(e -> eh.onError(new SimpleWSSession(e), e.getError()));
-            ws.onClose(c -> eh.onClose(new SimpleWSSession(c), c.getStatusCode(), c.getReason()));
+            ws.onError(e -> eh.onError(new SimpleWSSession(e), e.error()));
+            ws.onClose(c -> eh.onClose(new SimpleWSSession(c), c.status(), c.reason()));
         });
 
     }
@@ -156,6 +179,11 @@ public class SimpleWebsite implements Website {
     }
 
     @Override
+    public Environment getEnvironment() {
+        return environment;
+    }
+
+    @Override
     public String getCORS() {
         return cors;
     }
@@ -163,6 +191,11 @@ public class SimpleWebsite implements Website {
     @Override
     public DatabaseManager getDBManager() {
         return dbManager;
+    }
+
+    @Override
+    public Properties getInternalProperties() {
+        return internalProperties;
     }
 
     public Javalin getJavalin() {

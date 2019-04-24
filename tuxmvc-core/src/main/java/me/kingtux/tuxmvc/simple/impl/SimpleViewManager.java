@@ -1,8 +1,12 @@
 package me.kingtux.tuxmvc.simple.impl;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.request.Request;
+import me.kingtux.tuxmvc.core.rg.Resource;
 import me.kingtux.tuxmvc.core.rg.ResourceGrabber;
 import me.kingtux.tuxmvc.core.view.View;
 import me.kingtux.tuxmvc.core.view.ViewManager;
@@ -10,7 +14,6 @@ import me.kingtux.tuxmvc.core.view.ViewVariableGrabber;
 import me.kingtux.tuxmvc.simple.TMSUtils;
 import me.kingtux.tuxmvc.simple.jtwig.RouteFunction;
 import me.kingtux.tuxmvc.simple.jtwig.TuxResourceService;
-import org.apache.commons.io.IOUtils;
 import org.jtwig.JtwigTemplate;
 import org.jtwig.environment.Environment;
 import org.jtwig.environment.EnvironmentConfiguration;
@@ -18,9 +21,12 @@ import org.jtwig.environment.EnvironmentConfigurationBuilder;
 import org.jtwig.environment.EnvironmentFactory;
 import org.jtwig.resource.reference.ResourceReference;
 
-import java.net.URL;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class SimpleViewManager implements ViewManager {
     private ResourceGrabber resourceGrabber;
@@ -28,6 +34,7 @@ public class SimpleViewManager implements ViewManager {
     private Map<String, ViewVariableGrabber> viewVariableGrabbers = new HashMap<>();
     private EnvironmentConfiguration configurtation;
     private String extension;
+    private LoadingCache<Map.Entry<String, ResourceGrabber>, Resource> cachedTemplates;
 
     public SimpleViewManager(ResourceGrabber resourceGrabber, Website website, String property) {
         this.resourceGrabber = resourceGrabber;
@@ -37,6 +44,16 @@ public class SimpleViewManager implements ViewManager {
             configurtation = EnvironmentConfigurationBuilder.configuration().functions().add(new RouteFunction(website)).and().build();
         }
         extension = property == null || property.isEmpty() ? ".html" : property;
+        Properties properties = website.getInternalProperties();
+        if (!properties.getProperty("cache.timeout").equals("0") && !website.getEnvironment().equals(me.kingtux.tuxmvc.core.Environment.DEBUG)) {
+            TuxMVC.TUXMVC_LOGGER.debug("Using Cache with " + properties.getProperty("cache.size") + " Timeout " + properties.getProperty("cache.timeout"));
+            cachedTemplates = CacheBuilder.newBuilder().maximumSize(Long.parseLong(properties.getProperty("cache.size"))).expireAfterAccess(Long.parseLong(properties.getProperty("cache.timeout")), TimeUnit.MILLISECONDS).build(new CacheLoader<Map.Entry<String, ResourceGrabber>, Resource>() {
+                @Override
+                public Resource load(Map.Entry<String, ResourceGrabber> st) throws Exception {
+                    return st.getValue().getResource(st.getKey());
+                }
+            });
+        }
     }
 
     @Override
@@ -64,15 +81,15 @@ public class SimpleViewManager implements ViewManager {
         environment.getResourceEnvironment();
         TMSUtils.setFieldValue(environment.getResourceEnvironment(), new TuxResourceService(this), "resourceService");
         String s = null;
-        try {
-            URL url = grabber.getFile(view.getTemplate());
-            if (url == null) {
-                TuxMVC.TUXMVC_LOGGER.error("Unable to find "+ view.getTemplate());
-                return null;
+
+        if (cachedTemplates == null) {
+            s = new String(grabber.getResource(view.getTemplate()).getValue());
+        } else {
+            try {
+                s = new String(cachedTemplates.get(new AbstractMap.SimpleEntry<>(view.getTemplate(), grabber)).getValue());
+            } catch (ExecutionException e) {
+                e.printStackTrace();
             }
-            s = new String(IOUtils.toByteArray(url));
-        } catch (Exception e) {
-            TuxMVC.TUXMVC_LOGGER.error("Unable to find " + view.getTemplate(), e);
         }
         if (s == null) {
             return null;

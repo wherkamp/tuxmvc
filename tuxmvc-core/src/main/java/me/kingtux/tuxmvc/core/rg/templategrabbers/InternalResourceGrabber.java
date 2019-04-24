@@ -24,7 +24,7 @@ public class InternalResourceGrabber implements ResourceGrabber {
         URL url = getClass().getResource(path);
         if (url == null) return null;
         try {
-            return new Resource(IOUtils.toByteArray(getClass().getResourceAsStream(path)), url, null);
+            return new Resource(IOUtils.toByteArray(getClass().getResourceAsStream(path)), url, this,null);
         } catch (IOException e) {
             e.printStackTrace();
         }

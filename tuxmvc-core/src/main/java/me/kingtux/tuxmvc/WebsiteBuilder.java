@@ -1,11 +1,10 @@
 package me.kingtux.tuxmvc;
 
 import me.kingtux.tuxjsql.core.TuxJSQL;
+import me.kingtux.tuxmvc.core.Environment;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.WebsiteRules;
 import me.kingtux.tuxmvc.core.model.DatabaseManager;
-import me.kingtux.tuxmvc.core.rg.ResourceGrabber;
-import me.kingtux.tuxmvc.core.rg.ResourceGrabbers;
 import me.kingtux.tuxmvc.simple.db.SimpleDatabaseManager;
 import me.kingtux.tuxmvc.simple.impl.SimpleWebsite;
 import me.kingtux.tuxmvc.simple.impl.email.SimpleEmailManager;
@@ -28,17 +27,24 @@ public class WebsiteBuilder {
     private WebsiteBuilder() {
     }
 
+    /**
+     * This will create a website via a Properties Object
+     *
+     * @param p properties with all the rules
+     * @return the configured and built website!
+     */
     public static Website buildFromProperties(Properties p) {
         p = BetterProperties.ptobp(p);
-        String host = p.getProperty("site.url", "{PFFC}");
-        //if(host.isEmpty()) host = "{PFFC}";
-        File file = new File(p.getProperty("site.static", "public"));
-        int port = Integer.parseInt(p.getProperty("site.port", "2345"));
 
-        ResourceGrabber tg = ResourceGrabbers.valueOf(p.getProperty("template.grabber", "INTERNAL_EXTERNAL_GRABBER")).build(p.getProperty("template.path"));
+        //Bare Mininmum work
+        String host = p.getProperty("site.url", "{PFFC}");
+        WebsiteRules rules = new WebsiteRules(host, p.getProperty("site.name", ""));
+        int port = Integer.parseInt(p.getProperty("site.port", "2345"));
+        //Email Work
         SimpleEmailManager.SEmailBuilder em = SimpleEmailManager.buildEmailManager(p.getProperty("email.host", ""), p.getProperty("email.port", ""),
                 p.getProperty("email.ts", "SMTP"), p.getProperty("email.from",""), p.getProperty("email.password", ""), p.getProperty("email.from.name", ""));
 
+        //Database Work
         TOConnection connection;
         if(p.getProperty("db.type", null)==null){
             Properties tempDB = new Properties();
@@ -48,13 +54,15 @@ public class WebsiteBuilder {
         }else
             connection = new TOConnection(TuxJSQL.setup(p));
         DatabaseManager dbManager = new SimpleDatabaseManager(connection);
+        //SSL Work
         SslContextFactory factory = null;
         int sslPort = 0;
         if (Boolean.parseBoolean(p.getProperty("site.ssl","false"))) {
             factory = getSslContextFactory(p.getProperty("site.ssl.file"), p.getProperty("site.ssl.password"));
             sslPort = Integer.parseInt(p.getProperty("site.ssl.port"));
         }
-        return new SimpleWebsite(new WebsiteRules(host, p.getProperty("site.name","")), port, file, tg, em, dbManager, factory, sslPort, p.getProperty("tempalte.extension"));
+        //Create Website
+        return new SimpleWebsite(rules, port, em, dbManager, factory, sslPort, Environment.valueOf(p.getProperty("site.env", "DEBUG")));
     }
 
     public static WebsiteBuilder buildFromScratch() {
