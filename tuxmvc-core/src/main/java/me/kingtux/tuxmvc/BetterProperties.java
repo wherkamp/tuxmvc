@@ -9,7 +9,7 @@ public class BetterProperties extends Properties {
     @Override
     public String getProperty(String key, String defaultValue) {
         String s = super.getProperty(key, defaultValue);
-        if (StringUtils.isBlank(s) && !StringUtils.isBlank(defaultValue)) {
+        if (StringUtils.isBlank(s)) {
             s = defaultValue;
         }
         return s;

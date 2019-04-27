@@ -67,7 +67,8 @@ public class SimpleWebsite implements Website {
         try {
             internalProperties.load(SimpleWebsite.class.getResourceAsStream("/tuxmvc.properties"));
         } catch (IOException e) {
-            e.printStackTrace();
+            TuxMVC.TUXMVC_LOGGER.error("Unable to find tuxmvc.properties in jar" ,e);
+            System.exit(1);
         }
     }
 
