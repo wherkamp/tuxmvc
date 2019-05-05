@@ -1,16 +1,21 @@
 package me.kingtux.tuxmvc.core;
 
-import me.kingtux.tuxmvc.WebsiteBuilder;
+import me.kingtux.tuxmvc.core.controller.SingleSitemapHandler;
 import me.kingtux.tuxmvc.core.emails.EmailManager;
 import me.kingtux.tuxmvc.core.model.DatabaseManager;
 import me.kingtux.tuxmvc.core.view.ViewManager;
 import me.kingtux.tuxmvc.core.ws.WSHandler;
 
+import java.util.List;
 import java.util.Properties;
 
 @SuppressWarnings("ALL")
 public interface Website {
-
+    default void register(Object o) {
+        registerController(o);
+        registerErrorHandler(o);
+        reigsterSiteMapHandler(o);
+    }
     /**
      * Register a controller to your website
      * @param controller the controller to add
@@ -25,8 +30,9 @@ public interface Website {
 
     void registerWebsocketHandler(WSHandler eh);
 
+    void reigsterSiteMapHandler(Object o);
 
-
+    List<SingleSitemapHandler> getSSHs();
     /**
      * The view manager
      * @see ViewManager
@@ -57,7 +63,6 @@ public interface Website {
     default String route(String path) {
         return getSiteRules().baseURL() + "/" + path;
     }
-
     /**
      * The rules for the website
      *
@@ -78,4 +83,7 @@ public interface Website {
 
     Properties getInternalProperties();
 
+    ErrorMessageProvider getErrorMessageProvider();
+
+    void setErrorMessageProvider(ErrorMessageProvider errorMessageProvider);
 }

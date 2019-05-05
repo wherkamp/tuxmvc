@@ -102,7 +102,7 @@ public class WebsiteBuilder {
     }
 
     public static SslContextFactory getSslContextFactory(String file, String password) {
-        SslContextFactory sslContextFactory = new SslContextFactory();
+        SslContextFactory sslContextFactory = new SslContextFactory.Server();
         sslContextFactory.setKeyStorePath(file);
         sslContextFactory.setKeyStorePassword(password);
         return sslContextFactory;

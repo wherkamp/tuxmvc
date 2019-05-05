@@ -20,6 +20,7 @@ public @interface Controller {
      */
     String path();
 
+    boolean sitemap() default true;
     /**
      * The request type
      * @return type

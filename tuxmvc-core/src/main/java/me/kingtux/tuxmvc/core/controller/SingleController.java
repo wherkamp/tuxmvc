@@ -1,5 +1,6 @@
 package me.kingtux.tuxmvc.core.controller;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.annotations.Controller;
 import me.kingtux.tuxmvc.core.request.Request;
@@ -21,6 +22,9 @@ public class SingleController {
 
     public String getPath() {
         return method.getAnnotation(Controller.class).path();
+    }
+    public Boolean sitemap() {
+        return method.getAnnotation(Controller.class).sitemap();
     }
 
     public RequestType getRequestType() {
@@ -47,6 +51,13 @@ public class SingleController {
             if (!request.hasResponded() || !view.getTemplate().equals(""))
                 request.respond(view, vb);
         };
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof SingleController)) return false;
+        SingleController singleController = (SingleController) obj;
+        return ((singleController.getPath().equals(getPath())) && singleController.getRequestType() == getRequestType());
     }
 
     public String getName() {

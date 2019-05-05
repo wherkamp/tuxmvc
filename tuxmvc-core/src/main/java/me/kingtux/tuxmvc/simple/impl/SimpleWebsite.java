@@ -4,13 +4,17 @@ package me.kingtux.tuxmvc.simple.impl;
 import io.javalin.Javalin;
 import io.javalin.http.HandlerType;
 import me.kingtux.simpleannotation.MethodFinder;
+import me.kingtux.tuxjsitemap.SiteMapGenerator;
 import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.Environment;
+import me.kingtux.tuxmvc.core.ErrorMessageProvider;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.WebsiteRules;
 import me.kingtux.tuxmvc.core.annotations.Controller;
+import me.kingtux.tuxmvc.core.annotations.SitemapHandler;
 import me.kingtux.tuxmvc.core.annotations.Websocket;
 import me.kingtux.tuxmvc.core.controller.SingleController;
+import me.kingtux.tuxmvc.core.controller.SingleSitemapHandler;
 import me.kingtux.tuxmvc.core.emails.EmailManager;
 import me.kingtux.tuxmvc.core.errorhandler.ErrorController;
 import me.kingtux.tuxmvc.core.errorhandler.annotations.EHController;
@@ -29,8 +33,11 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 
@@ -44,20 +51,28 @@ public class SimpleWebsite implements Website {
     public static Logger TUXMVC_LOGGER = LoggerFactory.getLogger(TuxMVC.class);
     private Properties internalProperties;
     private Environment environment;
-
+    private List<SingleController> controllerList = new ArrayList<>();
+    private List<SingleSitemapHandler> singleSitemapHandlers = new ArrayList<>();
+    private ErrorMessageProvider errorMessageProvider;
     public SimpleWebsite(WebsiteRules websiteRules, int port, SimpleEmailManager.SEmailBuilder em, DatabaseManager dbManager, SslContextFactory sslContextFactory, int sslPort, Environment environment) {
+        Javalin.log = TuxMVC.TUXMVC_LOGGER;
         this.websiteRules = websiteRules;
         this.environment = environment;
-
         loadInternalProperties();
-
+        if (Boolean.parseBoolean(internalProperties.getProperty("sitemap.directory", "true"))) {
+            new File("sitemap").mkdir();
+        }
+        if (Boolean.parseBoolean(internalProperties.getProperty("sitemap.auto", "true"))) {
+            new File("sitemap").mkdir();
+            new SiteMapAuto(this).start();
+            internalProperties.setProperty("sitemap.auto","true");
+        }
         initJavalin(sslContextFactory, port, sslPort);
         emailManager = em.setSite(this).build();
         this.dbManager = dbManager;
         registerErrorHandler(new SimpleErrorHandler(this));
 
         createViewManager();
-
         javalin.start(port);
         TuxMVC.TUXMVC_LOGGER.info(String.format("%s is ready! Go to %s", this.websiteRules.name(), this.websiteRules.baseURL()));
     }
@@ -81,6 +96,7 @@ public class SimpleWebsite implements Website {
     public void registerController(Object controller) {
         for (Method method : MethodFinder.getAllMethodsWithAnnotation(controller.getClass(), Controller.class)) {
             SingleController sc = new SingleController(controller, method);
+            controllerList.add(sc);
             TUXMVC_LOGGER.debug(sc.getPath() + " -> " + controller.getClass().getSimpleName() + "#" + method.getName());
             javalin.addHandler(getHandlerType(sc.getRequestType()), sc.getPath(), new ControllerHandler(sc, this)::execute);
         }
@@ -137,6 +153,19 @@ public class SimpleWebsite implements Website {
             ws.onClose(c -> eh.onClose(new SimpleWSSession(c), c.status(), c.reason()));
         });
 
+    }
+
+    @Override
+    public void reigsterSiteMapHandler(Object o) {
+        for (Method method : MethodFinder.getAllMethodsWithAnnotation(o.getClass(), SitemapHandler.class)) {
+            SingleSitemapHandler sc = new SingleSitemapHandler(o, method);
+            singleSitemapHandlers.add(sc);
+        }
+    }
+
+    @Override
+    public List<SingleSitemapHandler> getSSHs() {
+        return singleSitemapHandlers;
     }
 
     private HandlerType getHandlerType(RequestType requestType) {
@@ -209,5 +238,18 @@ public class SimpleWebsite implements Website {
 
     void setWebsiteRules(WebsiteRules websiteRules) {
         this.websiteRules = websiteRules;
+    }
+
+    public List<SingleController> getControllerList() {
+        return controllerList;
+    }
+
+    @Override
+    public ErrorMessageProvider getErrorMessageProvider() {
+        return errorMessageProvider;
+    }
+
+    public void setErrorMessageProvider(ErrorMessageProvider errorMessageProvider) {
+        this.errorMessageProvider = errorMessageProvider;
     }
 }

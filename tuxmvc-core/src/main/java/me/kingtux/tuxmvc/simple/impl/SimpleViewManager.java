@@ -12,6 +12,7 @@ import me.kingtux.tuxmvc.core.view.View;
 import me.kingtux.tuxmvc.core.view.ViewManager;
 import me.kingtux.tuxmvc.core.view.ViewVariableGrabber;
 import me.kingtux.tuxmvc.simple.TMSUtils;
+import me.kingtux.tuxmvc.simple.jtwig.ErrorMessage;
 import me.kingtux.tuxmvc.simple.jtwig.RouteFunction;
 import me.kingtux.tuxmvc.simple.jtwig.TuxResourceService;
 import org.jtwig.JtwigTemplate;
@@ -41,7 +42,7 @@ public class SimpleViewManager implements ViewManager {
         // sr.host sr.protocol and sr.baseURL
         if (website != null) {
             registerDefaultViewVariable("sr", website.getSiteRules());
-            configurtation = EnvironmentConfigurationBuilder.configuration().functions().add(new RouteFunction(website)).and().build();
+            configurtation = EnvironmentConfigurationBuilder.configuration().functions().add(new RouteFunction(website)).add(new ErrorMessage(website)).and().build();
         }
         extension = property == null || property.isEmpty() ? ".html" : property;
         Properties properties = website.getInternalProperties();

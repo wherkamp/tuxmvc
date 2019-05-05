@@ -3,10 +3,13 @@ package me.kingtux.tuxmvc.simple.impl;
 
 import io.javalin.http.staticfiles.ResourceHandler;
 import io.javalin.http.staticfiles.StaticFileConfig;
+import me.kingtux.tuxjsql.core.TuxJSQL;
 import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.request.MimeType;
+import me.kingtux.tuxmvc.core.rg.Resource;
 import me.kingtux.tuxmvc.core.rg.ResourceGrabber;
+import me.kingtux.tuxmvc.core.rg.templategrabbers.ExternalResourceGrabber;
 import me.kingtux.tuxmvc.core.rg.templategrabbers.IEResourceGrabber;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
@@ -20,9 +23,13 @@ import java.net.URL;
 public class TMResourceHandler implements ResourceHandler {
     private ResourceGrabber grabber = new IEResourceGrabber("public");
 private Website website;
-
+    private ResourceGrabber siteMapGrabber;
     public TMResourceHandler(Website website) {
         this.website = website;
+        if (Boolean.parseBoolean(website.getInternalProperties().getProperty("sitemap.auto", "true"))) {
+
+            siteMapGrabber = new ExternalResourceGrabber("sitemap");
+        }
     }
 
     @Override
@@ -35,10 +42,15 @@ private Website website;
         String url = request.getRequestURI();
         String result = url.substring(url.lastIndexOf('.') + 1).trim();
         response.setContentType(MimeType.getMimeTypeFromExtension(result).getMimeType());
+        request.setAttribute("handled-as-static-file", true);
         TuxMVC.TUXMVC_LOGGER.debug(response.getContentType()+ " Was found for "+ result);
         URL urlForFile = null;
-        request.setAttribute("handled-as-static-file", true);
-        if (url.toLowerCase().startsWith("/assets/libs/")) {
+        if (url.toLowerCase().contains("sitemap") && Boolean.parseBoolean(website.getInternalProperties().getProperty("sitemap.directory", "true"))) {
+            TuxJSQL.logger.debug(url);
+            Resource resource = siteMapGrabber.getResource(url.substring(1));
+            if (resource != null) urlForFile = resource.getUrl();
+        }
+        if (url.toLowerCase().startsWith("/assets/libs/") && urlForFile == null) {
             String libPath = url.replace("/assets/libs/", "");
 
             StringBuilder path = new StringBuilder();
