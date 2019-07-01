@@ -19,11 +19,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class TMResourceHandler implements ResourceHandler {
     private ResourceGrabber grabber = new IEResourceGrabber("public");
 private Website website;
     private ResourceGrabber siteMapGrabber;
+    private SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
     public TMResourceHandler(Website website) {
         this.website = website;
         if (Boolean.parseBoolean(website.getInternalProperties().getProperty("sitemap.auto", "true"))) {
@@ -51,6 +54,7 @@ private Website website;
             if (resource != null) urlForFile = resource.getUrl();
         }
         if (url.toLowerCase().startsWith("/assets/libs/") && urlForFile == null) {
+
             String libPath = url.replace("/assets/libs/", "");
 
             StringBuilder path = new StringBuilder();
@@ -76,15 +80,21 @@ private Website website;
 
             if ((!path.toString().isEmpty()) && TuxMVC.class.getResource(path.toString()) != null) {
                 TuxMVC.TUXMVC_LOGGER.debug("Locating Internal Library File " + path.toString());
+                response.setHeader("Cache-Control", "public, max-age=31536000");
                 urlForFile = TuxMVC.class.getResource(path.toString());
             }
 
         }
         if (urlForFile == null) {
-            urlForFile = grabber    .getFile(url.substring(1));
+            urlForFile = grabber.getResource(url.substring(1)).getUrl();
+            //.getFile(url.substring(1));
         }
         if (urlForFile == null) return false;
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.YEAR, 1);
+        response.setHeader("Expires", format.format(cal.getTime()));
         try {
+
             IOUtils.copy(urlForFile.openStream(), response.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();

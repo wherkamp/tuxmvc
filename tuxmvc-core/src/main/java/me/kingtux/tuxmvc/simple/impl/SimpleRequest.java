@@ -2,10 +2,7 @@ package me.kingtux.tuxmvc.simple.impl;
 
 import io.javalin.http.Context;
 import me.kingtux.tuxmvc.core.Website;
-import me.kingtux.tuxmvc.core.request.HTTPCode;
-import me.kingtux.tuxmvc.core.request.Request;
-import me.kingtux.tuxmvc.core.request.RequestType;
-import me.kingtux.tuxmvc.core.request.UploadedFile;
+import me.kingtux.tuxmvc.core.request.*;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -17,10 +14,10 @@ public class SimpleRequest implements Request {
     private Context context;
     private RequestType type;
     private boolean responded = false;
-    private String mimeType = "text/html";
     private Website website;
     public SimpleRequest(Context context) {
         this.context = context;
+        responseType(MimeType.HTML);
     }
 
     public SimpleRequest(Context context, RequestType requestType, Website website) {
@@ -35,12 +32,12 @@ public class SimpleRequest implements Request {
 
     @Override
     public String responseType() {
-        return mimeType;
+        return context.contentType();
     }
 
     @Override
     public void responseType(String s) {
-        this.mimeType = s;
+        context.contentType(s);
     }
 
     @Override
@@ -66,7 +63,10 @@ public class SimpleRequest implements Request {
     public Map<String, String> formParam() {
         Map<String, String> map = new HashMap<>();
         for (Map.Entry<String, List<String>> st : context.formParamMap().entrySet()) {
-            map.put(st.getKey(), st.getValue().get(0));
+            List<String> list = st.getValue();
+            if (!list.isEmpty()) {
+                map.put(st.getKey(), st.getValue().get(0));
+            }
         }
 
         return map;
@@ -167,19 +167,23 @@ public class SimpleRequest implements Request {
     @Override
     public void respond(String s) {
         if(s==null){
+            responseType(MimeType.HTML);
+
             status(500);
             return;
         }
         responded = true;
-        context.contentType(mimeType).result(s);
+        context.result(s);
     }
 
     @Override
     public void respond(InputStream inputStream) {
         if(inputStream==null){
+            responseType(MimeType.HTML);
             status(500);
             return;
         }
+        responded = true;
         context.result(inputStream);
     }
 

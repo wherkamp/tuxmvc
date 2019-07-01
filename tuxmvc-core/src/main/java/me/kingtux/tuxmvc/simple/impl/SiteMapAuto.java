@@ -2,6 +2,7 @@ package me.kingtux.tuxmvc.simple.impl;
 
 import me.kingtux.tuxjsitemap.SiteMap;
 import me.kingtux.tuxjsitemap.SiteMapGenerator;
+import me.kingtux.tuxjsitemap.SiteURL;
 import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.controller.SingleController;
 import me.kingtux.tuxmvc.core.controller.SingleSitemapHandler;
@@ -38,9 +39,13 @@ public final class SiteMapAuto extends Thread {
             List<SingleSitemapHandler> singleSitemapHandlers = new ArrayList<>(website.getSSHs());
 
             for (SingleSitemapHandler singleSitemapHandler : singleSitemapHandlers) {
-                singleSitemapHandler.execute(website).forEach(generator::addURL);
+
+                List<SiteURL> urls = singleSitemapHandler.execute(website);
+                urls.forEach(generator::addURL);
             }
+
             map = generator.build();
+
             try {
                 map.writeToFolder(folder);
             } catch (IOException e) {
@@ -49,7 +54,7 @@ public final class SiteMapAuto extends Thread {
             try {
                 sleep(900000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                TuxMVC.TUXMVC_LOGGER.error("Unable to sleep thread", e);
             }
         }
     }

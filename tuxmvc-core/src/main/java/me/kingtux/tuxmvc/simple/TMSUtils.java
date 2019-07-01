@@ -1,5 +1,7 @@
 package me.kingtux.tuxmvc.simple;
 
+import me.kingtux.tuxmvc.TuxMVC;
+
 import java.lang.reflect.Field;
 
 public class    TMSUtils {
@@ -10,7 +12,7 @@ public class    TMSUtils {
             field.setAccessible(true);
             return field.get(o);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
+            TuxMVC.TUXMVC_LOGGER.error("Unable to get Field Value", e);
         }
         return null;
     }
@@ -21,7 +23,7 @@ public class    TMSUtils {
             field.setAccessible(true);
             field.set(instanse, value);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
+            TuxMVC.TUXMVC_LOGGER.error("Unable to set Field Value", e);
         }
 
     }

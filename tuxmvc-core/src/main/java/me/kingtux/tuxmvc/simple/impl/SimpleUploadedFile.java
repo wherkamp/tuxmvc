@@ -9,6 +9,7 @@ public class SimpleUploadedFile implements UploadedFile {
 
     public SimpleUploadedFile(io.javalin.http.UploadedFile jUF) {
         this.jUF = jUF;
+
     }
 
 
@@ -19,7 +20,7 @@ public class SimpleUploadedFile implements UploadedFile {
 
     @Override
     public String name() {
-        return jUF.getName();
+        return jUF.getFilename();
     }
 
     @Override
