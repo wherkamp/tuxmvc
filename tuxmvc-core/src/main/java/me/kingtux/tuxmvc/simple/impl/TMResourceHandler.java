@@ -3,7 +3,6 @@ package me.kingtux.tuxmvc.simple.impl;
 
 import io.javalin.http.staticfiles.ResourceHandler;
 import io.javalin.http.staticfiles.StaticFileConfig;
-import me.kingtux.tuxjsql.core.TuxJSQL;
 import me.kingtux.tuxmvc.TuxMVC;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.request.MimeType;
@@ -24,9 +23,10 @@ import java.util.Calendar;
 
 public class TMResourceHandler implements ResourceHandler {
     private ResourceGrabber grabber = new IEResourceGrabber("public");
-private Website website;
+    private Website website;
     private ResourceGrabber siteMapGrabber;
     private SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+
     public TMResourceHandler(Website website) {
         this.website = website;
         if (Boolean.parseBoolean(website.getInternalProperties().getProperty("sitemap.auto", "true"))) {
@@ -46,10 +46,10 @@ private Website website;
         String result = url.substring(url.lastIndexOf('.') + 1).trim();
         response.setContentType(MimeType.getMimeTypeFromExtension(result).getMimeType());
         request.setAttribute("handled-as-static-file", true);
-        TuxMVC.TUXMVC_LOGGER.debug(response.getContentType()+ " Was found for "+ result);
+        TuxMVC.TUXMVC_LOGGER.debug(response.getContentType() + " Was found for " + result);
         URL urlForFile = null;
         if (url.toLowerCase().contains("sitemap") && Boolean.parseBoolean(website.getInternalProperties().getProperty("sitemap.directory", "true"))) {
-            TuxJSQL.logger.debug(url);
+            TuxMVC.TUXMVC_LOGGER.debug(url);
             Resource resource = siteMapGrabber.getResource(url.substring(1));
             if (resource != null) urlForFile = resource.getUrl();
         }
@@ -86,7 +86,12 @@ private Website website;
 
         }
         if (urlForFile == null) {
-            urlForFile = grabber.getResource(url.substring(1)).getUrl();
+            Resource resource = grabber.getResource(url.substring(1));
+            if (resource == null) {
+                TuxMVC.TUXMVC_LOGGER.info("Unable to locate: " + url.substring(1));
+                return false;
+            }
+            urlForFile = resource.getUrl();
             //.getFile(url.substring(1));
         }
         if (urlForFile == null) return false;

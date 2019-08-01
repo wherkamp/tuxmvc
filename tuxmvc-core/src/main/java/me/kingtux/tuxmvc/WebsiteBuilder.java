@@ -1,6 +1,6 @@
 package me.kingtux.tuxmvc;
 
-import me.kingtux.tuxjsql.core.TuxJSQL;
+import dev.tuxjsql.core.TuxJSQLBuilder;
 import me.kingtux.tuxmvc.core.Environment;
 import me.kingtux.tuxmvc.core.Website;
 import me.kingtux.tuxmvc.core.WebsiteRules;
@@ -48,11 +48,11 @@ public class WebsiteBuilder {
         TOConnection connection;
         if(p.getProperty("db.type", null)==null){
             Properties tempDB = new Properties();
-            tempDB.setProperty("db.type", "SQLITE");
+            tempDB.setProperty("db.type", "dev.tuxjsq.sqlite.SQLiteBuilder");
             tempDB.setProperty("db.file", "db.db");
-            connection = new TOConnection(TuxJSQL.setup(tempDB));
+            connection = new TOConnection(TuxJSQLBuilder.create(tempDB));
         }else
-            connection = new TOConnection(TuxJSQL.setup(p));
+            connection = new TOConnection(TuxJSQLBuilder.create(p));
         DatabaseManager dbManager = new SimpleDatabaseManager(connection);
         //SSL Work
         SslContextFactory factory = null;
